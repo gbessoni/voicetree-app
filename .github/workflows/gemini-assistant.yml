@@ -6,6 +6,10 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+permissions:
+  issues: write
+  pull-requests: write
+
 env:
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
