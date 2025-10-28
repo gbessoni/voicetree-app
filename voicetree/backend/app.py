@@ -18,8 +18,8 @@ from schemas import UserCreate, UserResponse, LinkCreate, LinkResponse
 app = FastAPI(title="VoiceTree", description="Linktree clone with AI voice features")
 
 # Mount static files and templates
-app.mount("/static", StaticFiles(directory="voicetree/frontend/static"), name="static")
-templates = Jinja2Templates(directory="voicetree/frontend/templates")
+app.mount("/static", StaticFiles(directory="../frontend/static"), name="static")
+templates = Jinja2Templates(directory="../frontend/templates")
 
 # Initialize database on startup
 @app.on_event("startup")
