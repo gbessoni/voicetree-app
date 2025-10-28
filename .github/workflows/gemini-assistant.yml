@@ -26,7 +26,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install google-generativeai requests
+          pip install packaging google-generativeai requests
       
       - name: Generate project plan with Gemini
         id: gemini-plan
@@ -106,7 +106,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install google-generativeai requests
+          pip install packaging google-generativeai requests
       
       - name: Analyze issue and generate fix
         id: generate-fix
@@ -197,7 +197,7 @@ jobs:
       
       - name: Install dependencies
         run: |
-          pip install google-generativeai requests
+          pip install packaging google-generativeai requests
           pip install pylint flake8 black isort
       
       - name: Get changed Python files
