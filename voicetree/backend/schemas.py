@@ -23,6 +23,23 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
+# VoiceBio Schemas
+class VoiceBioBase(BaseModel):
+    text: str = Field(..., max_length=500)
+
+class VoiceBioCreate(VoiceBioBase):
+    pass
+
+class VoiceBioResponse(VoiceBioBase):
+    id: int
+    user_id: int
+    audio_url: Optional[str] = None
+    is_approved: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # Link Schemas
 class LinkBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)

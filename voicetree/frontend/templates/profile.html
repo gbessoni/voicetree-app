@@ -21,6 +21,15 @@
             {% if user.bio %}
                 <p class="profile-bio">{{ user.bio }}</p>
             {% endif %}
+
+            {% if voice_bio %}
+                <div class="voice-bio-player">
+                    <audio controls>
+                        <source src="{{ voice_bio.audio_url }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+            {% endif %}
         </header>
 
         <main class="links-section">
@@ -45,9 +54,49 @@
             {% endif %}
         </main>
 
+        <section class="voice-bio-submission">
+            <h2>Create Your Voice Bio</h2>
+            <form id="voice-bio-form">
+                <textarea id="voice-bio-text" name="text" maxlength="500" placeholder="Enter your voice bio text (max 500 characters)"></textarea>
+                <button type="submit">Generate Voice Bio</button>
+            </form>
+            <div id="form-message"></div>
+        </section>
+
         <footer class="profile-footer">
             <p>Create your own <a href="/">VoiceTree</a> 🌳</p>
         </footer>
     </div>
+    <script>
+        document.getElementById('voice-bio-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const text = document.getElementById('voice-bio-text').value;
+            const username = "{{ user.username }}";
+            const messageDiv = document.getElementById('form-message');
+
+            try {
+                const response = await fetch(`/api/users/${username}/voice`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (response.ok) {
+                    messageDiv.textContent = 'Voice bio submitted for approval!';
+                    messageDiv.style.color = 'green';
+                } else {
+                    const error = await response.json();
+                    messageDiv.textContent = `Error: ${error.detail}`;
+                    messageDiv.style.color = 'red';
+                }
+            } catch (error) {
+                messageDiv.textContent = 'An unexpected error occurred.';
+                messageDiv.style.color = 'red';
+            }
+        });
+    </script>
 </body>
 </html>

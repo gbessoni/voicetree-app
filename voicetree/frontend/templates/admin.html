@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - VoiceTree</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="admin-page">
+    <div class="container">
+        <h1>Admin Approval</h1>
+        {% if voice_bios %}
+            <div class="approval-container">
+                {% for bio in voice_bios %}
+                    <div class="approval-card">
+                        <h3>{{ bio.user.display_name }} (@{{ bio.user.username }})</h3>
+                        <p><strong>Text:</strong> {{ bio.text }}</p>
+                        <div class="voice-bio-player">
+                            <audio controls>
+                                <source src="{{ bio.audio_url }}" type="audio/mpeg">
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+                        <div class="approval-actions">
+                            <form action="/admin/approve/{{ bio.id }}" method="post" style="display: inline;">
+                                <button type="submit" class="approve-btn">Approve</button>
+                            </form>
+                            <form action="/admin/reject/{{ bio.id }}" method="post" style="display: inline;">
+                                <button type="submit" class="reject-btn">Reject</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No voice bios awaiting approval.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

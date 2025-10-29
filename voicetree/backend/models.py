@@ -21,6 +21,7 @@ class User(Base):
     
     # Relationship to links
     links = relationship("Link", back_populates="user", cascade="all, delete-orphan")
+    voice_bio = relationship("VoiceBio", uselist=False, back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(username='{self.username}', display_name='{self.display_name}')>"
@@ -44,3 +45,21 @@ class Link(Base):
     
     def __repr__(self):
         return f"<Link(title='{self.title}', url='{self.url}')>"
+
+class VoiceBio(Base):
+    """Voice bio model"""
+    __tablename__ = "voice_bios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    text = Column(Text, nullable=False)
+    audio_url = Column(String(500), nullable=True)
+    is_approved = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    # Relationship to user
+    user = relationship("User", back_populates="voice_bio")
+
+    def __repr__(self):
+        return f"<VoiceBio(user_id='{self.user_id}', is_approved='{self.is_approved}')>"

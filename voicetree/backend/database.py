@@ -7,7 +7,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # SQLite database URL
-SQLALCHEMY_DATABASE_URL = "sqlite:///./voicetree.db"
+import os
+# get the absolute path to the directory this file is in
+basedir = os.path.abspath(os.path.dirname(__file__))
+SQLALCHEMY_DATABASE_URL = "sqlite:///" + os.path.join(basedir, "voicetree.db")
 
 # Create SQLAlchemy engine
 engine = create_engine(
