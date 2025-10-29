@@ -43,7 +43,7 @@ jobs:
           import json
           
           genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-          model = genai.GenerativeModel('gemini-1.5-flash')
+          model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
           
           issue_title = """${{ github.event.issue.title }}"""
           issue_body = """${{ github.event.issue.body }}"""
@@ -124,7 +124,7 @@ jobs:
           import re
           
           genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-          model = genai.GenerativeModel('gemini-1.5-flash')
+          model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
           
           issue_title = """${{ github.event.issue.title }}"""
           issue_body = """${{ github.event.issue.body }}"""
@@ -244,7 +244,7 @@ jobs:
           import os
           
           genai.configure(api_key=os.environ['GEMINI_API_KEY'])
-          model = genai.GenerativeModel('gemini-1.5-flash')
+          model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
           
           pr_title = """${{ github.event.pull_request.title }}"""
           pr_number = "${{ github.event.pull_request.number }}"
