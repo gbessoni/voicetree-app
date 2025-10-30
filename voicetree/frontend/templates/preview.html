@@ -3,15 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preview - {{ user.display_name }} - VoiceTree</title>
+    <title>Preview - {{ user.display_name }} - selfie.fm</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #fafafa;
+            margin: 0;
+        }
+        
         .preview-banner {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             text-align: center;
             margin-bottom: 30px;
+        }
+        
+        .preview-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .preview-logo img {
+            height: 32px;
+            width: auto;
+        }
+        
+        .preview-logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
         }
         
         .preview-banner h2 {
@@ -135,6 +160,10 @@
 </head>
 <body>
     <div class="preview-banner">
+        <div class="preview-logo">
+            <img src="/static/images/logo.png" alt="selfie.fm logo">
+            <span class="preview-logo-text">selfie.fm</span>
+        </div>
         <h2>👀 Preview Mode</h2>
         <p>This is how your profile will look to visitors</p>
         <div class="preview-actions">

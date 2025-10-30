@@ -1,8 +1,8 @@
-# 🌳 VoiceTree - MVP
+# 🎙️ selfie.fm - Voice-Powered Link Sharing
 
-**GitHub Issue #1: Build VoiceTree MVP - Core Features**
+**AI-Powered Link Sharing Platform with Voice Messages**
 
-VoiceTree is a Linktree clone with AI voice features. Share all your important links from a single, customizable page.
+selfie.fm is a next-generation link-in-bio platform that adds your voice to every link you share. Create a personalized page with AI-powered voice messages that introduce each of your links.
 
 ## Features (Phase 1 - MVP)
 
@@ -103,22 +103,47 @@ Uses SQLite database (`voicetree.db`) with two tables:
 
 The database is automatically created on first run.
 
-## Next Steps (Future Phases)
+## Current Features
 
-- User authentication
-- Link analytics
-- AI voice features for link descriptions
-- Custom themes and styling
-- Link reordering
-- QR code generation
+✅ User profiles with customizable bio and avatar
+✅ Link management with voice messages
+✅ AI voice cloning with ElevenLabs
+✅ Click tracking and analytics
+✅ Voice message plays tracking
+✅ Dashboard with charts and stats
+✅ Auto-approve voice messages
+✅ Profile publishing controls
+✅ Linktree import functionality
 
-## Development
+## Technology Stack
 
-Built with:
-- **Backend**: FastAPI, SQLAlchemy, SQLite
-- **Frontend**: HTML, CSS, Jinja2
-- **Server**: Uvicorn
+**Backend:**
+- FastAPI - Modern Python web framework
+- SQLAlchemy - SQL toolkit and ORM
+- SQLite - Embedded database
+- ElevenLabs API - AI voice cloning and generation
+
+**Frontend:**
+- HTML5/CSS3 - Modern responsive design
+- Vanilla JavaScript - No framework dependencies
+- Jinja2 - Template engine
+- Chart.js - Analytics visualization
+
+**Server:**
+- Uvicorn - ASGI server
+
+## Voice AI Features
+
+selfie.fm uses ElevenLabs AI to provide:
+- **Voice Cloning**: Clone your voice with 3 audio samples
+- **Voice Messages**: Generate personalized voice intros for each link
+- **Auto-Generation**: AI-powered voice message creation
+- **Voice Testing**: Test your cloned voice before publishing
+
+## Contributing
+
+selfie.fm is built to help creators add personality to their link sharing. Feel free to contribute improvements and new features.
 
 ---
 
-**Reference**: GitHub Issue #1 - Build VoiceTree MVP - Core Features
+**Built with ❤️ using AI voice technology**

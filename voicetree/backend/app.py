@@ -1,6 +1,6 @@
 """
-VoiceTree - FastAPI Backend
-GitHub Issue #1: Build VoiceTree MVP - Core Features
+selfie.fm - FastAPI Backend
+AI-Powered Link Sharing Platform with Voice Messages
 """
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +12,7 @@ from typing import List, Optional
 import uvicorn
 
 from database import get_db, init_db
-from models import User, Link
+from models import User, Link, ProfileView, LinkClick, VoiceMessage
 from schemas import (
     UserCreate, UserResponse, LinkCreate, LinkResponse,
     ScrapeRequest, ScrapeResponse, UserCreateFromLinktree,
@@ -21,8 +21,10 @@ from schemas import (
 )
 from scraper import scraper
 from voice_ai import VoiceAIService
+from datetime import datetime, timedelta
+from sqlalchemy import func, desc
 
-app = FastAPI(title="VoiceTree", description="Linktree clone with AI voice features")
+app = FastAPI(title="selfie.fm", description="AI-powered link sharing with voice messages")
 
 # Mount static files and templates
 app.mount("/static", StaticFiles(directory="../frontend/static"), name="static")
@@ -86,6 +88,13 @@ async def user_profile(request: Request, username: str, db: Session = Depends(ge
     # Only show published profiles
     if not user.is_published:
         raise HTTPException(status_code=404, detail="Profile not published yet")
+    
+    # Track profile view
+    referrer = request.headers.get("referer", "direct")
+    profile_view = ProfileView(user_id=user.id, referrer=referrer)
+    db.add(profile_view)
+    user.profile_views += 1
+    db.commit()
     
     links = db.query(Link).filter(Link.user_id == user.id, Link.is_active == True).all()
     
@@ -268,6 +277,340 @@ def get_user_links(username: str, db: Session = Depends(get_db)):
     
     links = db.query(Link).filter(Link.user_id == user.id, Link.is_active == True).all()
     return links
+
+# Analytics API Routes
+
+@app.get("/api/admin/{username}/stats")
+def get_dashboard_stats(username: str, db: Session = Depends(get_db)):
+    """Get overview statistics for admin dashboard"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get views from last 30 days
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    recent_views = db.query(func.count(ProfileView.id)).filter(
+        ProfileView.user_id == user.id,
+        ProfileView.view_date >= thirty_days_ago
+    ).scalar()
+    
+    # Calculate conversion rate
+    conversion_rate = 0
+    if user.profile_views > 0:
+        conversion_rate = (user.total_link_clicks / user.profile_views) * 100
+    
+    return {
+        "profile_views_30d": recent_views or 0,
+        "total_link_clicks": user.total_link_clicks,
+        "voice_message_plays": user.voice_message_plays,
+        "conversion_rate": round(conversion_rate, 2)
+    }
+
+@app.get("/api/admin/{username}/views-chart")
+def get_views_chart_data(username: str, db: Session = Depends(get_db)):
+    """Get profile views over time for chart (last 30 days)"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    
+    # Group views by date
+    views_by_date = db.query(
+        func.date(ProfileView.view_date).label('date'),
+        func.count(ProfileView.id).label('count')
+    ).filter(
+        ProfileView.user_id == user.id,
+        ProfileView.view_date >= thirty_days_ago
+    ).group_by(func.date(ProfileView.view_date)).all()
+    
+    # Create complete date range with zeros for missing dates
+    date_counts = {str(v.date): v.count for v in views_by_date}
+    labels = []
+    data = []
+    
+    for i in range(30):
+        date = (datetime.now() - timedelta(days=29-i)).date()
+        labels.append(date.strftime("%m/%d"))
+        data.append(date_counts.get(str(date), 0))
+    
+    return {
+        "labels": labels,
+        "data": data
+    }
+
+@app.get("/api/admin/{username}/clicks-chart")
+def get_clicks_chart_data(username: str, db: Session = Depends(get_db)):
+    """Get link clicks by link for bar chart (top 10)"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get top 10 links by click count
+    top_links = db.query(Link).filter(
+        Link.user_id == user.id
+    ).order_by(desc(Link.click_count)).limit(10).all()
+    
+    labels = [link.title for link in top_links]
+    data = [link.click_count for link in top_links]
+    
+    return {
+        "labels": labels,
+        "data": data
+    }
+
+@app.get("/api/admin/{username}/traffic-sources")
+def get_traffic_sources(username: str, db: Session = Depends(get_db)):
+    """Get traffic sources for pie chart"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    
+    # Group by referrer
+    traffic = db.query(
+        ProfileView.referrer,
+        func.count(ProfileView.id).label('count')
+    ).filter(
+        ProfileView.user_id == user.id,
+        ProfileView.view_date >= thirty_days_ago
+    ).group_by(ProfileView.referrer).all()
+    
+    # Categorize traffic sources
+    direct = 0
+    social = 0
+    other = 0
+    
+    social_domains = ['facebook', 'twitter', 'instagram', 'linkedin', 'tiktok', 'youtube']
+    
+    for t in traffic:
+        if not t.referrer or t.referrer == 'direct':
+            direct += t.count
+        elif any(domain in t.referrer.lower() for domain in social_domains):
+            social += t.count
+        else:
+            other += t.count
+    
+    return {
+        "labels": ["Direct", "Social Media", "Other"],
+        "data": [direct, social, other]
+    }
+
+@app.get("/api/admin/{username}/recent-clicks")
+def get_recent_clicks(username: str, limit: int = 20, db: Session = Depends(get_db)):
+    """Get recent link clicks for analytics table"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get recent clicks with link information
+    recent_clicks = db.query(LinkClick).filter(
+        LinkClick.user_id == user.id
+    ).order_by(desc(LinkClick.click_date)).limit(limit).all()
+    
+    # Format the data
+    clicks_data = []
+    for click in recent_clicks:
+        clicks_data.append({
+            "id": click.id,
+            "link_title": click.link.title if click.link else "Unknown",
+            "link_url": click.link.url if click.link else "",
+            "click_date": click.click_date.isoformat(),
+            "referrer": click.referrer or "direct",
+            "user_agent": click.user_agent or "Unknown"
+        })
+    
+    return clicks_data
+
+# Link Management API Routes
+
+@app.put("/api/admin/{username}/links/{link_id}/toggle")
+def toggle_link_active(username: str, link_id: int, db: Session = Depends(get_db)):
+    """Toggle link active/inactive status"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    link = db.query(Link).filter(Link.id == link_id, Link.user_id == user.id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    
+    link.is_active = not link.is_active
+    db.commit()
+    
+    return {"is_active": link.is_active}
+
+@app.put("/api/admin/{username}/links/reorder")
+def reorder_links(username: str, link_orders: dict, db: Session = Depends(get_db)):
+    """Reorder links - expects {"link_id": order} mapping"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    for link_id, order in link_orders.items():
+        link = db.query(Link).filter(Link.id == int(link_id), Link.user_id == user.id).first()
+        if link:
+            link.order = order
+    
+    db.commit()
+    return {"message": "Links reordered successfully"}
+
+@app.post("/api/clicks/{username}/{link_id}")
+def track_link_click(
+    username: str,
+    link_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Track a link click with full analytics data"""
+    # Get user
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get link
+    link = db.query(Link).filter(Link.id == link_id, Link.user_id == user.id).first()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+    
+    # Extract analytics data
+    referrer = request.headers.get("referer", "direct")
+    user_agent = request.headers.get("user-agent", "")
+    
+    # Increment counters
+    link.click_count += 1
+    user.total_link_clicks += 1
+    
+    # Record click event with full data
+    click = LinkClick(
+        link_id=link_id,
+        user_id=user.id,
+        referrer=referrer,
+        user_agent=user_agent
+    )
+    db.add(click)
+    db.commit()
+    
+    return {"message": "Click tracked", "link_id": link_id}
+
+@app.post("/api/track/voice-play/{username}")
+def track_voice_play(username: str, db: Session = Depends(get_db)):
+    """Track a voice message play"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.voice_message_plays += 1
+    db.commit()
+    
+    return {"message": "Voice play tracked"}
+
+# Voice Message Approval API Routes
+
+@app.get("/api/admin/{username}/pending-voices")
+def get_pending_voice_messages(username: str, db: Session = Depends(get_db)):
+    """Get pending voice messages for approval"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    pending = db.query(VoiceMessage).filter(
+        VoiceMessage.user_id == user.id,
+        VoiceMessage.is_approved == False,
+        VoiceMessage.is_active == True
+    ).order_by(desc(VoiceMessage.created_at)).all()
+    
+    return [{
+        "id": vm.id,
+        "text_content": vm.text_content,
+        "audio_file_path": vm.audio_file_path,
+        "created_at": vm.created_at.isoformat()
+    } for vm in pending]
+
+@app.put("/api/admin/{username}/voices/{voice_id}/approve")
+def approve_voice_message(username: str, voice_id: int, db: Session = Depends(get_db)):
+    """Approve a voice message"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    voice = db.query(VoiceMessage).filter(
+        VoiceMessage.id == voice_id,
+        VoiceMessage.user_id == user.id
+    ).first()
+    if not voice:
+        raise HTTPException(status_code=404, detail="Voice message not found")
+    
+    voice.is_approved = True
+    voice.approved_at = datetime.now()
+    db.commit()
+    
+    return {"message": "Voice message approved"}
+
+@app.put("/api/admin/{username}/voices/{voice_id}/reject")
+def reject_voice_message(username: str, voice_id: int, db: Session = Depends(get_db)):
+    """Reject a voice message"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    voice = db.query(VoiceMessage).filter(
+        VoiceMessage.id == voice_id,
+        VoiceMessage.user_id == user.id
+    ).first()
+    if not voice:
+        raise HTTPException(status_code=404, detail="Voice message not found")
+    
+    voice.is_active = False
+    db.commit()
+    
+    return {"message": "Voice message rejected"}
+
+@app.put("/api/admin/{username}/auto-approve")
+def toggle_auto_approve(username: str, db: Session = Depends(get_db)):
+    """Toggle auto-approve setting for voice messages"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.auto_approve_voice = not user.auto_approve_voice
+    db.commit()
+    
+    return {"auto_approve": user.auto_approve_voice}
+
+# Profile Settings API Routes
+
+@app.put("/api/admin/{username}/profile")
+def update_profile_settings(
+    username: str,
+    display_name: str = Form(...),
+    bio: str = Form(None),
+    db: Session = Depends(get_db)
+):
+    """Update profile settings"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.display_name = display_name
+    if bio is not None:
+        user.bio = bio
+    db.commit()
+    
+    return {"message": "Profile updated"}
+
+@app.put("/api/admin/{username}/toggle-publish")
+def toggle_publish(username: str, db: Session = Depends(get_db)):
+    """Toggle profile publish status"""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.is_published = not user.is_published
+    db.commit()
+    
+    return {"is_published": user.is_published}
 
 # Voice AI Routes
 

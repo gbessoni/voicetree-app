@@ -3,22 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - {{ user.display_name }} - VoiceTree</title>
+    <title>Dashboard - {{ user.display_name }} - selfie.fm</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
         .dashboard-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 30px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-header-content {
             text-align: center;
+        }
+        
+        .dashboard-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .dashboard-logo img {
+            height: 40px;
+            width: auto;
+        }
+        
+        .dashboard-logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
         }
         
         .dashboard-header h1 {
             margin: 0 0 10px 0;
+            font-size: 2em;
         }
         
         .dashboard-actions {
             margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -31,7 +72,6 @@
             transition: all 0.3s;
             text-decoration: none;
             display: inline-block;
-            margin: 5px;
         }
         
         .btn-preview {
@@ -43,25 +83,135 @@
             background: #f0f0f0;
         }
         
-        .dashboard-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        .btn-publish {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
         }
         
-        .section {
+        .btn-publish:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Tab Navigation */
+        .tab-navigation {
+            display: flex;
+            gap: 0;
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: #718096;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .tab-button:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Analytics Styles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
             margin-bottom: 30px;
         }
         
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid;
+        }
+        
+        .stat-card.purple { border-left-color: #667eea; }
+        .stat-card.blue { border-left-color: #4299e1; }
+        .stat-card.green { border-left-color: #48bb78; }
+        .stat-card.orange { border-left-color: #ed8936; }
+        
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .chart-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+        
+        /* Section Styles */
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        
         .section-title {
-            font-size: 24px;
+            font-size: 1.5em;
             font-weight: 700;
             margin-bottom: 20px;
-            color: #1a1a1a;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
         }
         
         .form-group {
@@ -71,13 +221,11 @@
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            color: #333;
+            color: #2d3748;
             font-weight: 500;
         }
         
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
+        .form-control {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -86,16 +234,15 @@
             box-sizing: border-box;
         }
         
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
+        .form-control:focus {
             outline: none;
             border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
-        .form-group textarea {
+        textarea.form-control {
             resize: vertical;
-            min-height: 80px;
+            min-height: 100px;
         }
         
         .btn-primary {
@@ -107,6 +254,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.2s;
         }
         
         .btn-primary:hover {
@@ -114,8 +262,8 @@
         }
         
         .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
+            background: #e2e8f0;
+            color: #2d3748;
             padding: 10px 20px;
             border: none;
             border-radius: 8px;
@@ -124,7 +272,7 @@
         }
         
         .btn-danger {
-            background: #f44336;
+            background: #f56565;
             color: white;
             padding: 8px 15px;
             border: none;
@@ -133,34 +281,129 @@
             cursor: pointer;
         }
         
-        .link-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
         }
         
-        .link-info {
-            flex: 1;
+        /* Link Management */
+        .links-table {
+            width: 100%;
+            border-collapse: collapse;
         }
         
-        .link-item-title {
+        .links-table th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            color: #2d3748;
             font-weight: 600;
-            margin-bottom: 5px;
         }
         
-        .link-item-url {
-            font-size: 14px;
-            color: #666;
-            word-break: break-all;
+        .links-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .links-table tr:hover {
+            background: #f7fafc;
         }
         
         .link-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        
+        .status-inactive {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #48bb78;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
         }
         
         .add-link-form {
@@ -170,194 +413,29 @@
             margin-top: 20px;
         }
         
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .no-links {
-            text-align: center;
-            padding: 20px;
-            color: #999;
-        }
-        
-        /* Voice Recording Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-        }
-        
-        .close-modal {
-            font-size: 28px;
-            font-weight: bold;
-            color: #999;
-            cursor: pointer;
-            line-height: 1;
-        }
-        
-        .close-modal:hover {
-            color: #333;
-        }
-        
-        .recording-section {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .sample-script {
-            background: #f0f0ff;
+        .voice-message-item {
+            background: #f7fafc;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: left;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
         }
         
-        .sample-script p {
-            margin: 5px 0;
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
+        .voice-message-text {
+            margin-bottom: 10px;
+            color: #2d3748;
         }
         
-        .record-button {
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            font-size: 32px;
-            cursor: pointer;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-        
-        .record-button:hover {
-            transform: scale(1.1);
-        }
-        
-        .record-button.recording {
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        
-        .timer {
-            font-size: 24px;
-            font-weight: bold;
-            color: #667eea;
-            margin: 10px 0;
-        }
-        
-        .audio-preview {
-            margin: 20px 0;
-        }
-        
-        .audio-preview audio {
-            width: 100%;
+        .voice-message-date {
+            color: #718096;
+            font-size: 0.85em;
             margin-bottom: 10px;
         }
         
-        .samples-list {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .sample-item {
-            background: white;
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
+        .voice-message-actions {
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
             align-items: center;
-        }
-        
-        .sample-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 10px;
-        }
-        
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 40px;
-        }
-        
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         
         .info-box {
@@ -373,729 +451,509 @@
             color: #004085;
             font-size: 14px;
         }
+        
+        @media (max-width: 768px) {
+            .tab-button {
+                font-size: 13px;
+                padding: 10px 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard-header">
-        <h1>🌳 Your VoiceTree Dashboard</h1>
-        <p>@{{ user.username }}</p>
+        <div class="dashboard-header-content">
+            <div class="dashboard-logo">
+                <img src="/static/images/logo.png" alt="selfie.fm logo">
+                <span class="dashboard-logo-text">selfie.fm</span>
+            </div>
+            <h1>🎯 Dashboard</h1>
+            <p>@{{ user.username }}</p>
         <div class="dashboard-actions">
             <a href="/preview/{{ user.username }}" class="btn btn-preview">👀 Preview Profile</a>
+            <button class="btn btn-publish" id="toggle-publish-btn">
+                {% if user.is_published %}📤 Unpublish{% else %}📢 Publish{% endif %}
+            </button>
+            {% if user.is_published %}
+            <a href="/{{ user.username }}" target="_blank" class="btn btn-preview">👁️ View Live</a>
+            {% endif %}
+        </div>
         </div>
     </div>
     
     <div class="dashboard-container">
-        <!-- Voice Clone Setup Section -->
-        <div class="section">
-            <h2 class="section-title">🎤 Voice Clone Setup</h2>
-            <div id="voiceCloneSuccess" class="success-message"></div>
-            <div id="voiceCloneError" class="error-message"></div>
-            
-            <div id="voiceCloneStatus">
-                {% if user.voice_clone_id %}
-                <!-- Step 3: Success Screen with Test Interface -->
-                <div style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); padding: 30px; border-radius: 15px; text-align: center;">
-                    <h2 style="color: #155724; margin: 0 0 10px 0; font-size: 32px;">✓ Your cloned voice is ready</h2>
-                    <p style="color: #155724; margin: 0 0 25px 0; font-size: 16px;">Voice ID: <strong>{{ user.voice_clone_id }}</strong></p>
-                    
-                    <div style="background: white; padding: 25px; border-radius: 12px; text-align: left; max-width: 600px; margin: 0 auto;">
-                        <h3 style="color: #333; margin: 0 0 15px 0; font-size: 20px;">Try your cloned voice</h3>
-                        
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <div style="flex: 1;">
-                                <input 
-                                    type="text" 
-                                    id="testVoiceText" 
-                                    placeholder="Hello, world! What a wonderful day to be a text-to-speech model!"
-                                    maxlength="500"
-                                    style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; box-sizing: border-box;">
-                            </div>
-                            <button 
-                                id="testVoiceBtn" 
-                                onclick="testClonedVoice()"
-                                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 24px; cursor: pointer; min-width: 60px; height: 48px; display: flex; align-items: center; justify-content: center;">
-                                ▶
-                            </button>
-                        </div>
-                        
-                        <div id="testAudioContainer" style="margin-top: 15px; display: none;">
-                            <audio id="testAudio" controls style="width: 100%;"></audio>
-                        </div>
-                        
-                        <small style="display: block; margin-top: 10px; color: #666;">Enter any text (up to 500 characters) to test your voice</small>
-                    </div>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab-button" onclick="switchTab('links')">🔗 Manage Links</button>
+            <button class="tab-button" onclick="switchTab('settings')">⚙️ Profile Settings</button>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analytics-tab" class="tab-content active">
+            <!-- Overview Stats -->
+            <div class="stats-grid">
+                <div class="stat-card purple">
+                    <div class="stat-label">Profile Views (30 days)</div>
+                    <div class="stat-value" id="stat-views">0</div>
                 </div>
-                {% else %}
-                <!-- Step 1: Record Voice Samples -->
-                <div>
-                    <div class="info-box">
-                        <p><strong>📝 Create your voice clone in 3 simple steps:</strong></p>
-                        <p>1. Record up to 3 voice samples (5-15 seconds each)</p>
-                        <p>2. We'll automatically select the best sample and create your voice clone</p>
-                        <p>3. Test your new voice and start using it for messages!</p>
-                    </div>
-                    
-                    <form id="voiceCloneForm">
+                <div class="stat-card blue">
+                    <div class="stat-label">Total Link Clicks</div>
+                    <div class="stat-value" id="stat-clicks">0</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label">Voice Message Plays</div>
+                    <div class="stat-value" id="stat-voice">0</div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-label">Conversion Rate</div>
+                    <div class="stat-value" id="stat-conversion">0%</div>
+                </div>
+            </div>
+            
+            <!-- Analytics Charts -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📈 Profile Views (Last 30 Days)</div>
+                    <canvas id="viewsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">📊 Link Clicks by Link</div>
+                    <canvas id="clicksChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🌐 Traffic Sources</div>
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Recent Clicks Table -->
+            <div class="section">
+                <div class="section-title">🔗 Recent Link Clicks</div>
+                <div id="recent-clicks-container">
+                    <table class="links-table">
+                        <thead>
+                            <tr>
+                                <th>Link</th>
+                                <th>Timestamp</th>
+                                <th>Referrer</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-clicks-tbody">
+                            <!-- Recent clicks will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Manage Links Tab -->
+        <div id="links-tab" class="tab-content">
+            <div class="section">
+                <div class="section-title">🔗 Your Links</div>
+                <div id="linksSuccess" class="success-message"></div>
+                <div id="linksError" class="error-message"></div>
+                
+                <table class="links-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Title</th>
+                            <th>URL</th>
+                            <th>Clicks</th>
+                            <th>Voice</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-tbody">
+                        <!-- Links will be loaded here -->
+                    </tbody>
+                </table>
+                
+                <div class="add-link-form">
+                    <h3>Add New Link</h3>
+                    <form id="addLinkForm">
                         <div class="form-group">
-                            <label for="voiceName">Voice Name *</label>
-                            <input type="text" id="voiceName" placeholder="My Voice Clone" required>
-                            <small style="color: #666;">Give your voice clone a memorable name</small>
+                            <label for="linkTitle">Title *</label>
+                            <input type="text" class="form-control" id="linkTitle" placeholder="My Awesome Link" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="voiceLanguage">Language *</label>
-                            <select id="voiceLanguage" required>
-                                <option value="en-US">English (US)</option>
-                                <option value="en-GB">English (UK)</option>
-                                <option value="es-ES">Spanish (Spain)</option>
-                                <option value="es-MX">Spanish (Mexico)</option>
-                                <option value="fr-FR">French</option>
-                                <option value="de-DE">German</option>
-                                <option value="it-IT">Italian</option>
-                                <option value="pt-BR">Portuguese (Brazil)</option>
-                                <option value="ja-JP">Japanese</option>
-                                <option value="ko-KR">Korean</option>
-                                <option value="zh-CN">Chinese (Mandarin)</option>
-                            </select>
+                            <label for="linkUrl">URL *</label>
+                            <input type="url" class="form-control" id="linkUrl" placeholder="https://example.com" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="voiceTags">Tags (optional)</label>
-                            <input type="text" id="voiceTags" placeholder="professional, friendly, energetic">
-                            <small style="color: #666;">Comma-separated tags to describe your voice</small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="voiceDescription">Description (optional)</label>
-                            <textarea id="voiceDescription" placeholder="A warm, friendly voice perfect for welcome messages..."></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label><strong>Voice Samples</strong></label>
-                            <p style="color: #666; margin: 5px 0 15px 0;">Add up to 3 samples, and we'll pick the best one</p>
-                            
-                            <button type="button" class="btn-primary" onclick="openRecordingModal()" style="width: 100%;">
-                                🎤 Record Audio Sample
-                            </button>
-                            
-                            <div id="samplesList" class="samples-list" style="display: none; margin-top: 15px;">
-                                <p style="margin: 0 0 10px 0; font-weight: 600;">Recorded Samples:</p>
-                                <div id="samplesContainer"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="removeNoise">
-                            <label for="removeNoise">Remove background noise (recommended)</label>
-                        </div>
-                        
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="legalConsent" required>
-                            <label for="legalConsent">I confirm I have the legal right to clone this voice *</label>
-                        </div>
-                        
-                        <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;" id="createVoiceBtn" disabled>
-                            Create Voice Clone
-                        </button>
-                        <small style="display: block; margin-top: 10px; color: #666; text-align: center;">
-                            You need at least 1 sample to continue
-                        </small>
+                        <button type="submit" class="btn-primary">➕ Add Link</button>
                     </form>
                 </div>
-                {% endif %}
             </div>
             
-            <!-- Step 2: Processing State (shown during API call) -->
-            <div id="processingState" class="loading-spinner">
-                <div class="spinner"></div>
-                <h3 style="color: #667eea; margin: 0 0 10px 0;">Creating your voice clone...</h3>
-                <p style="color: #666;">This may take a moment. Please don't close this page.</p>
+            <!-- Voice Message Approval -->
+            <div class="section">
+                <div class="section-title">🎙️ Voice Message Approval</div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 10px;">
+                        <span>Auto-approve voice messages:</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="auto-approve-toggle" {% if user.auto_approve_voice %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </label>
+                </div>
+                <div id="pending-voices-container">
+                    <!-- Pending voice messages will be loaded here -->
+                </div>
             </div>
         </div>
         
-        <!-- Welcome Message Section -->
-        <div class="section">
-            <h2 class="section-title">👋 Welcome Message</h2>
-            <div id="welcomeSuccess" class="success-message"></div>
-            <div id="welcomeError" class="error-message"></div>
-            
-            {% if user.voice_clone_id %}
-            <div>
-                <p style="color: #666; margin-bottom: 15px;">Create a welcome message that plays when visitors view your profile.</p>
+        <!-- Profile Settings Tab -->
+        <div id="settings-tab" class="tab-content">
+            <!-- Profile Settings -->
+            <div class="section">
+                <div class="section-title">👤 Profile Information</div>
+                <div id="profileSuccess" class="success-message"></div>
+                <div id="profileError" class="error-message"></div>
                 
-                {% if user.welcome_message_audio %}
-                <div style="background: #f0f0ff; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="margin: 0 0 10px 0; font-weight: 600;">Current Welcome Message:</p>
-                    <p style="margin: 0 0 10px 0; color: #666;">"{{ user.welcome_message_text }}"</p>
-                    <audio controls style="width: 100%; margin-bottom: 10px;">
-                        <source src="/audio/{{ user.welcome_message_audio.split('/')[-1] }}" type="audio/mpeg">
-                    </audio>
-                    <button onclick="deleteWelcomeMessage()" class="btn-danger">Delete Welcome Message</button>
-                </div>
-                {% endif %}
-                
-                <form id="welcomeMessageForm">
+                <form id="profile-settings-form">
                     <div class="form-group">
-                        <label for="welcomeText">Welcome Message Text (max 500 characters) *</label>
-                        <textarea id="welcomeText" maxlength="500" placeholder="Welcome to my VoiceTree! Check out my latest projects below..." required></textarea>
-                        <small style="color: #999;">Character count: <span id="welcomeCharCount">0</span>/500</small>
+                        <label class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="display-name" value="{{ user.display_name }}" required>
                     </div>
-                    
                     <div class="form-group">
-                        <label>Message Type</label>
-                        <select id="welcomeType" style="padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; width: 100%; font-size: 16px;">
-                            <option value="static">Static (same message always)</option>
-                            <option value="daily_ai">Daily AI (coming soon)</option>
-                        </select>
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-control" id="bio">{{ user.bio or '' }}</textarea>
                     </div>
-                    
-                    <button type="submit" class="btn-primary">Generate Welcome Message</button>
+                    <div class="form-group">
+                        <label class="form-label">Profile Photo URL</label>
+                        <input type="url" class="form-control" id="avatar-url" value="{{ user.avatar_url or '' }}" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Banner Image URL</label>
+                        <input type="url" class="form-control" id="banner-url" value="{{ user.banner_url or '' }}" placeholder="https://...">
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Save Changes</button>
                 </form>
             </div>
-            {% else %}
-            <div style="background: #f8d7da; padding: 15px; border-radius: 8px; color: #721c24;">
-                Please set up your voice clone first to create welcome messages.
-            </div>
-            {% endif %}
-        </div>
-        
-        <!-- Profile Section -->
-        <div class="section">
-            <h2 class="section-title">Profile Information</h2>
-            <div id="profileSuccess" class="success-message"></div>
-            <div id="profileError" class="error-message"></div>
             
-            <form id="profileForm">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" value="{{ user.username }}" disabled>
-                </div>
+            <!-- Voice Clone Setup -->
+            <div class="section">
+                <div class="section-title">🎤 Voice Clone Setup</div>
+                <div id="voiceCloneSuccess" class="success-message"></div>
+                <div id="voiceCloneError" class="error-message"></div>
                 
-                <div class="form-group">
-                    <label for="displayName">Display Name *</label>
-                    <input type="text" id="displayName" value="{{ user.display_name }}" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="bio">Bio</label>
-                    <textarea id="bio">{{ user.bio or '' }}</textarea>
-                </div>
-                
-                <button type="submit" class="btn-primary">Save Profile</button>
-            </form>
-        </div>
-        
-        <!-- Links Section -->
-        <div class="section">
-            <h2 class="section-title">Your Links</h2>
-            <div id="linksSuccess" class="success-message"></div>
-            <div id="linksError" class="error-message"></div>
-            
-            <div id="linksList">
-                {% if links %}
-                    {% for link in links %}
-                    <div class="link-item" data-link-id="{{ link.id }}" style="display: block;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <div class="link-info">
-                                <div class="link-item-title">{{ link.title }}</div>
-                                <div class="link-item-url">{{ link.url }}</div>
-                            </div>
-                            <div class="link-actions">
-                                <button class="btn-danger" onclick="deleteLink({{ link.id }})">Delete</button>
-                            </div>
-                        </div>
-                        
-                        {% if user.voice_clone_id %}
-                        <div style="background: white; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0;">
-                            {% if link.voice_message_audio %}
-                            <div>
-                                <p style="margin: 0 0 8px 0; font-weight: 600; font-size: 14px;">🎤 Voice Message:</p>
-                                <p style="margin: 0 0 8px 0; font-size: 13px; color: #666;">"{{ link.voice_message_text }}"</p>
-                                <audio controls style="width: 100%; height: 32px; margin-bottom: 8px;">
-                                    <source src="/audio/{{ link.voice_message_audio.split('/')[-1] }}" type="audio/mpeg">
-                                </audio>
-                                <button onclick="showEditLinkVoice({{ link.id }})" class="btn-secondary" style="font-size: 12px; padding: 6px 12px;">Edit Voice</button>
-                                <button onclick="deleteLinkVoice({{ link.id }})" class="btn-danger" style="font-size: 12px; padding: 6px 12px;">Delete Voice</button>
-                            </div>
-                            {% else %}
-                            <button onclick="showAddLinkVoice({{ link.id }})" class="btn-secondary" style="font-size: 12px; padding: 8px 16px;">➕ Add Voice Message (10s)</button>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Voice Message Form (hidden by default) -->
-                        <div id="linkVoiceForm{{ link.id }}" style="display: none; background: #f0f0ff; padding: 15px; border-radius: 8px; margin-top: 10px;">
-                            <form onsubmit="generateLinkVoice(event, {{ link.id }})">
-                                <div class="form-group" style="margin-bottom: 10px;">
-                                    <label style="font-size: 14px;">Voice Message (max 200 chars, ~50 words) *</label>
-                                    <textarea id="linkVoiceText{{ link.id }}" maxlength="200" placeholder="Click this link to check out my latest project..." required style="min-height: 60px; font-size: 14px;"></textarea>
-                                    <small style="color: #999; font-size: 12px;">Characters: <span id="linkCharCount{{ link.id }}">0</span>/200</small>
-                                </div>
-                                <button type="submit" class="btn-primary" style="font-size: 14px; padding: 8px 20px;">Generate Voice</button>
-                                <button type="button" onclick="hideLinkVoiceForm({{ link.id }})" class="btn-secondary" style="font-size: 14px; padding: 8px 20px;">Cancel</button>
-                            </form>
-                        </div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                {% else %}
-                <div class="no-links">
-                    <p>No links yet. Add your first link below!</p>
-                </div>
-                {% endif %}
-            </div>
-            
-            <div class="add-link-form">
-                <h3>Add New Link</h3>
-                <form id="addLinkForm">
-                    <div class="form-group">
-                        <label for="linkTitle">Title *</label>
-                        <input type="text" id="linkTitle" placeholder="My Awesome Link" required>
+                <div id="voice-clone-container">
+                    {% if user.voice_clone_id %}
+                    <!-- Voice Clone Exists -->
+                    <div class="info-box" style="background: #d4edda; border-left-color: #48bb78;">
+                        <p><strong>✓ Voice Clone Ready:</strong> {{ user.voice_clone_id }}</p>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="linkUrl">URL *</label>
-                        <input type="url" id="linkUrl" placeholder="https://example.com" required>
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                        <h3 style="margin-bottom: 15px;">🎧 Test Your Voice</h3>
+                        <div class="form-group">
+                            <label>Enter text to test your voice (max 500 characters)</label>
+                            <textarea id="test-voice-text" class="form-control" maxlength="500" rows="3" placeholder="Type something to hear it in your cloned voice..."></textarea>
+                            <div style="text-align: right; color: #718096; font-size: 0.85em; margin-top: 5px;">
+                                <span id="test-char-count">0</span>/500 characters
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="testVoiceClone()">🔊 Generate & Play</button>
+                        <div id="test-audio-container" style="margin-top: 15px; display: none;">
+                            <audio id="test-audio-player" controls style="width: 100%;"></audio>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="btn-primary">Add Link</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Recording Modal -->
-    <div id="recordingModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Record Voice Sample</h3>
-                <span class="close-modal" onclick="closeRecordingModal()">&times;</span>
-            </div>
-            
-            <div class="sample-script">
-                <p><strong>Sample Script (read naturally):</strong></p>
-                <p>"Hello! My name is [Your Name], and I'm excited to share my work with you. This is my authentic voice, recorded clearly for the best results. Thanks for listening!"</p>
-            </div>
-            
-            <div class="recording-section">
-                <button id="recordBtn" class="record-button" onclick="toggleRecording()">
-                    ⏺
-                </button>
-                <div class="timer" id="recordTimer">0:00</div>
-                <p id="recordStatus" style="color: #666; margin: 10px 0;">Click to start recording (5-15 seconds recommended)</p>
-                
-                <div id="audioPreview" class="audio-preview" style="display: none;">
-                    <audio id="previewAudio" controls></audio>
-                    <button class="btn-primary" onclick="saveCurrentSample()" style="width: 100%; margin-top: 10px;">
-                        ✓ Use This Sample
-                    </button>
-                    <button class="btn-secondary" onclick="discardSample()" style="width: 100%; margin-top: 5px;">
-                        🗑 Discard & Record Again
-                    </button>
+                    <div style="margin-top: 20px;">
+                        <button class="btn-secondary" onclick="showVoiceCloneModal()">🎙️ Record New Clone</button>
+                    </div>
+                    {% else %}
+                    <!-- No Voice Clone -->
+                    <div class="info-box">
+                        <p><strong>No voice clone set up yet.</strong></p>
+                        <p>Create your voice clone to enable personalized voice messages for your links!</p>
+                    </div>
+                    <button class="btn-primary" onclick="showVoiceCloneModal()" style="margin-top: 15px;">🎙️ Create Voice Clone</button>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
     
     <script>
-        const username = '{{ user.username }}';
-        const hasVoiceClone = {{ 'true' if user.voice_clone_id else 'false' }};
+        const username = "{{ user.username }}";
         
-        // Voice recording variables
-        let mediaRecorder;
-        let audioChunks = [];
-        let recordingInterval;
-        let recordingSeconds = 0;
-        let voiceSamples = [];
-        let currentRecordingBlob = null;
-        
-        // Check browser support
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('Voice recording is not supported in your browser. Please use Chrome, Firefox, or Safari.');
-        }
-        
-        // Character count for welcome message
-        const welcomeText = document.getElementById('welcomeText');
-        if (welcomeText) {
-            welcomeText.addEventListener('input', (e) => {
-                document.getElementById('welcomeCharCount').textContent = e.target.value.length;
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
             });
-        }
-        
-        // Modal functions
-        function openRecordingModal() {
-            if (voiceSamples.length >= 3) {
-                alert('Maximum 3 samples allowed. Please remove one before adding more.');
-                return;
-            }
-            document.getElementById('recordingModal').style.display = 'flex';
-            resetRecording();
-        }
-        
-        function closeRecordingModal() {
-            document.getElementById('recordingModal').style.display = 'none';
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
-            resetRecording();
-        }
-        
-        function resetRecording() {
-            audioChunks = [];
-            recordingSeconds = 0;
-            document.getElementById('recordTimer').textContent = '0:00';
-            document.getElementById('recordStatus').textContent = 'Click to start recording (5-15 seconds recommended)';
-            document.getElementById('audioPreview').style.display = 'none';
-            document.getElementById('recordBtn').classList.remove('recording');
-            document.getElementById('recordBtn').textContent = '⏺';
-            currentRecordingBlob = null;
-        }
-        
-        async function toggleRecording() {
-            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                await startRecording();
-            } else {
-                stopRecording();
+            
+            // Remove active from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for the tab
+            if (tabName === 'analytics') {
+                loadAnalyticsData();
+            } else if (tabName === 'links') {
+                loadLinksData();
             }
         }
         
-        async function startRecording() {
+        // Load analytics data
+        async function loadAnalyticsData() {
+            await loadStats();
+            await loadViewsChart();
+            await loadClicksChart();
+            await loadTrafficChart();
+            await loadRecentClicks();
+        }
+        
+        async function loadStats() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                recordingSeconds = 0;
+                const response = await fetch(`/api/admin/${username}/stats`);
+                const data = await response.json();
                 
-                mediaRecorder.ondataavailable = (event) => {
-                    audioChunks.push(event.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    currentRecordingBlob = audioBlob;
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    document.getElementById('previewAudio').src = audioUrl;
-                    document.getElementById('audioPreview').style.display = 'block';
-                    document.getElementById('recordStatus').textContent = 'Recording complete! Listen to your sample below.';
-                    
-                    // Stop all tracks
-                    stream.getTracks().forEach(track => track.stop());
-                };
-                
-                mediaRecorder.start();
-                document.getElementById('recordBtn').classList.add('recording');
-                document.getElementById('recordBtn').textContent = '⏹';
-                document.getElementById('recordStatus').textContent = 'Recording... Click to stop';
-                
-                // Start timer
-                recordingInterval = setInterval(() => {
-                    recordingSeconds++;
-                    const minutes = Math.floor(recordingSeconds / 60);
-                    const seconds = recordingSeconds % 60;
-                    document.getElementById('recordTimer').textContent = 
-                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                }, 1000);
-                
+                document.getElementById('stat-views').textContent = data.profile_views_30d;
+                document.getElementById('stat-clicks').textContent = data.total_link_clicks;
+                document.getElementById('stat-voice').textContent = data.voice_message_plays;
+                document.getElementById('stat-conversion').textContent = data.conversion_rate + '%';
             } catch (error) {
-                alert('Could not access microphone. Please check your permissions.');
-                console.error('Error accessing microphone:', error);
+                console.error('Error loading stats:', error);
             }
         }
         
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                clearInterval(recordingInterval);
-                document.getElementById('recordBtn').classList.remove('recording');
-                document.getElementById('recordBtn').textContent = '⏺';
+        async function loadViewsChart() {
+            try {
+                const response = await fetch(`/api/admin/${username}/views-chart`);
+                const data = await response.json();
+                
+                const ctx = document.getElementById('viewsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Profile Views',
+                            data: data.data,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading views chart:', error);
             }
         }
         
-        function saveCurrentSample() {
-            if (!currentRecordingBlob) {
-                alert('No recording to save');
-                return;
+        async function loadClicksChart() {
+            try {
+                const response = await fetch(`/api/admin/${username}/clicks-chart`);
+                const data = await response.json();
+                
+                const ctx = document.getElementById('clicksChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Clicks',
+                            data: data.data,
+                            backgroundColor: '#4299e1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading clicks chart:', error);
             }
-            
-            if (recordingSeconds < 5) {
-                alert('Sample is too short. Please record at least 5 seconds.');
-                return;
-            }
-            
-            if (recordingSeconds > 20) {
-                alert('Sample is too long. Please keep it under 20 seconds.');
-                return;
-            }
-            
-            // Add to samples array
-            voiceSamples.push({
-                blob: currentRecordingBlob,
-                duration: recordingSeconds,
-                timestamp: Date.now()
-            });
-            
-            // Update UI
-            updateSamplesList();
-            updateCreateButton();
-            closeRecordingModal();
         }
         
-        function discardSample() {
-            resetRecording();
+        async function loadTrafficChart() {
+            try {
+                const response = await fetch(`/api/admin/${username}/traffic-sources`);
+                const data = await response.json();
+                
+                const ctx = document.getElementById('trafficChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: ['#667eea', '#48bb78', '#ed8936']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading traffic chart:', error);
+            }
         }
         
-        function updateSamplesList() {
-            const samplesList = document.getElementById('samplesList');
-            const samplesContainer = document.getElementById('samplesContainer');
-            
-            if (voiceSamples.length === 0) {
-                samplesList.style.display = 'none';
-                return;
+        async function loadRecentClicks() {
+            try {
+                const response = await fetch(`/api/admin/${username}/recent-clicks?limit=20`);
+                const clicks = await response.json();
+                
+                const tbody = document.getElementById('recent-clicks-tbody');
+                
+                if (clicks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="empty-state"><div class="empty-state-icon">📊</div><div>No link clicks yet</div></td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = clicks.map(click => {
+                    const date = new Date(click.click_date);
+                    const timeString = date.toLocaleString();
+                    const referrer = click.referrer === 'direct' ? '🔗 Direct' : `🌐 ${click.referrer.substring(0, 50)}`;
+                    
+                    return `
+                        <tr>
+                            <td><strong>${click.link_title}</strong></td>
+                            <td>${timeString}</td>
+                            <td>${referrer}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading recent clicks:', error);
             }
-            
-            samplesList.style.display = 'block';
-            samplesContainer.innerHTML = '';
-            
-            voiceSamples.forEach((sample, index) => {
-                const sampleItem = document.createElement('div');
-                sampleItem.className = 'sample-item';
-                sampleItem.innerHTML = `
-                    <div>
-                        <strong>Sample ${index + 1}</strong>
-                        <span style="color: #666; margin-left: 10px;">${sample.duration} seconds</span>
+        }
+        
+        // Load links data
+        async function loadLinksData() {
+            await loadLinks();
+            await loadPendingVoices();
+        }
+        
+        async function loadLinks() {
+            try {
+                const response = await fetch(`/api/users/${username}/links`);
+                const links = await response.json();
+                
+                const tbody = document.getElementById('links-tbody');
+                
+                if (links.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-state-icon">🔗</div><div>No links yet. Add your first link!</div></td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = links.map((link, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${link.title}</td>
+                        <td><a href="${link.url}" target="_blank" style="color: #667eea; text-decoration: none;">${link.url.substring(0, 40)}...</a></td>
+                        <td>${link.click_count || 0}</td>
+                        <td>
+                            ${link.voice_message_audio ? 
+                                `<button class="btn-secondary btn-small" onclick="showVoiceMessageModal(${link.id}, '${link.title.replace(/'/g, "\\'")}', '${(link.voice_message_text || '').replace(/'/g, "\\'")}')">✏️ Edit Voice</button>` : 
+                                `<button class="btn-primary btn-small" onclick="showVoiceMessageModal(${link.id}, '${link.title.replace(/'/g, "\\'")}', '')">➕ Add Voice</button>`
+                            }
+                        </td>
+                        <td><span class="status-badge status-${link.is_active ? 'active' : 'inactive'}">${link.is_active ? 'Active' : 'Inactive'}</span></td>
+                        <td class="link-actions">
+                            <button class="btn btn-secondary btn-small" onclick="toggleLink(${link.id})">
+                                ${link.is_active ? 'Hide' : 'Show'}
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteLink(${link.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading links:', error);
+            }
+        }
+        
+        async function loadPendingVoices() {
+            try {
+                const response = await fetch(`/api/admin/${username}/pending-voices`);
+                const voices = await response.json();
+                
+                const container = document.getElementById('pending-voices-container');
+                
+                if (voices.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎙️</div><div>No pending voice messages</div></div>';
+                    return;
+                }
+                
+                container.innerHTML = voices.map(voice => `
+                    <div class="voice-message-item">
+                        <div class="voice-message-text"><strong>Text:</strong> ${voice.text_content}</div>
+                        <div class="voice-message-date">Created: ${new Date(voice.created_at).toLocaleString()}</div>
+                        <div class="voice-message-actions">
+                            ${voice.audio_file_path ? `<audio controls src="/audio/${voice.audio_file_path.split('/').pop()}" style="max-width: 300px;"></audio>` : ''}
+                            <button class="btn btn-primary btn-small" onclick="approveVoice(${voice.id})">✅ Approve</button>
+                            <button class="btn btn-danger btn-small" onclick="rejectVoice(${voice.id})">❌ Reject</button>
+                        </div>
                     </div>
-                    <button class="btn-danger" onclick="removeSample(${index})" type="button" style="padding: 6px 12px; font-size: 12px;">
-                        Remove
-                    </button>
-                `;
-                samplesContainer.appendChild(sampleItem);
-            });
-        }
-        
-        function removeSample(index) {
-            voiceSamples.splice(index, 1);
-            updateSamplesList();
-            updateCreateButton();
-        }
-        
-        function updateCreateButton() {
-            const createBtn = document.getElementById('createVoiceBtn');
-            if (voiceSamples.length > 0) {
-                createBtn.disabled = false;
-            } else {
-                createBtn.disabled = true;
+                `).join('');
+            } catch (error) {
+                console.error('Error loading pending voices:', error);
             }
         }
         
-        // Voice Clone Form Submit
-        const voiceCloneForm = document.getElementById('voiceCloneForm');
-        if (voiceCloneForm) {
-            voiceCloneForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                if (voiceSamples.length === 0) {
-                    alert('Please record at least one voice sample');
-                    return;
+        // Toggle link active status
+        async function toggleLink(linkId) {
+            try {
+                const response = await fetch(`/api/admin/${username}/links/${linkId}/toggle`, {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    loadLinks();
                 }
-                
-                const voiceName = document.getElementById('voiceName').value.trim();
-                const voiceLanguage = document.getElementById('voiceLanguage').value;
-                const voiceTags = document.getElementById('voiceTags').value.trim();
-                const voiceDescription = document.getElementById('voiceDescription').value.trim();
-                const removeNoise = document.getElementById('removeNoise').checked;
-                const legalConsent = document.getElementById('legalConsent').checked;
-                
-                if (!legalConsent) {
-                    alert('You must confirm you have the legal right to clone this voice');
-                    return;
-                }
-                
-                // Show processing state
-                document.getElementById('voiceCloneStatus').style.display = 'none';
-                document.getElementById('processingState').style.display = 'block';
-                
-                try {
-                    // Prepare form data with all samples
-                    const formData = new FormData();
-                    formData.append('voice_name', voiceName);
-                    formData.append('language', voiceLanguage);
-                    formData.append('tags', voiceTags);
-                    formData.append('description', voiceDescription);
-                    formData.append('remove_noise', removeNoise);
-                    
-                    // Add all voice samples
-                    voiceSamples.forEach((sample, index) => {
-                        formData.append('voice_samples', sample.blob, `sample_${index}.mp3`);
-                    });
-                    
-                    const response = await fetch(`/api/voice/clone/${username}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    if (!response.ok) {
-                        const data = await response.json();
-                        throw new Error(data.detail || 'Failed to create voice clone');
-                    }
-                    
-                    const result = await response.json();
-                    
-                    // Show success and reload
-                    const successMsg = document.getElementById('voiceCloneSuccess');
-                    successMsg.textContent = result.message || 'Voice clone created successfully!';
-                    successMsg.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                    
-                } catch (error) {
-                    document.getElementById('processingState').style.display = 'none';
-                    document.getElementById('voiceCloneStatus').style.display = 'block';
-                    
-                    const errorMsg = document.getElementById('voiceCloneError');
-                    errorMsg.textContent = error.message;
-                    errorMsg.style.display = 'block';
-                }
-            });
+            } catch (error) {
+                console.error('Error toggling link:', error);
+            }
         }
         
-        // Test Cloned Voice Function
-        async function testClonedVoice() {
-            const textInput = document.getElementById('testVoiceText');
-            const text = textInput.value.trim();
-            
-            if (!text) {
-                alert('Please enter some text to test your voice');
-                return;
-            }
-            
-            const btn = document.getElementById('testVoiceBtn');
-            const originalText = btn.textContent;
-            btn.textContent = '⏳';
-            btn.disabled = true;
+        // Delete link
+        async function deleteLink(linkId) {
+            if (!confirm('Are you sure you want to delete this link?')) return;
             
             try {
-                const formData = new FormData();
-                formData.append('text', text);
-                
-                const response = await fetch(`/api/voice/test/${username}`, {
-                    method: 'POST',
-                    body: formData
+                const response = await fetch(`/api/users/${username}/links/${linkId}`, {
+                    method: 'DELETE'
                 });
-                
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.detail || 'Failed to generate test audio');
+                if (response.ok) {
+                    loadLinks();
+                    loadStats();
                 }
-                
-                const audioBlob = await response.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-                
-                const audioContainer = document.getElementById('testAudioContainer');
-                const audioElement = document.getElementById('testAudio');
-                audioElement.src = audioUrl;
-                audioContainer.style.display = 'block';
-                audioElement.play();
-                
             } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
+                console.error('Error deleting link:', error);
             }
         }
         
-        // Welcome Message Form Submit
-        const welcomeMessageForm = document.getElementById('welcomeMessageForm');
-        if (welcomeMessageForm) {
-            welcomeMessageForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const text = document.getElementById('welcomeText').value.trim();
-                const messageType = document.getElementById('welcomeType').value;
-                
-                const successMsg = document.getElementById('welcomeSuccess');
-                const errorMsg = document.getElementById('welcomeError');
-                
-                successMsg.style.display = 'none';
-                errorMsg.style.display = 'none';
-                
-                const submitBtn = e.target.querySelector('button[type="submit"]');
-                const originalText = submitBtn.textContent;
-                submitBtn.textContent = 'Generating...';
-                submitBtn.disabled = true;
-                
-                try {
-                    const response = await fetch(`/api/voice/generate-welcome/${username}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: text, message_type: messageType })
-                    });
-                    
-                    if (!response.ok) {
-                        const data = await response.json();
-                        throw new Error(data.detail || 'Failed to generate welcome message');
-                    }
-                    
-                    const result = await response.json();
-                    successMsg.textContent = result.message;
-                    successMsg.style.display = 'block';
-                    
-                    setTimeout(() => window.location.reload(), 2000);
-                    
-                } catch (error) {
-                    errorMsg.textContent = error.message;
-                    errorMsg.style.display = 'block';
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-        
-        async function deleteWelcomeMessage() {
-            if (!confirm('Are you sure you want to delete the welcome message?')) return;
-            alert('Welcome message deletion will be implemented');
-        }
-        
-        // Profile Form Submit
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const displayName = document.getElementById('displayName').value.trim();
-            const bio = document.getElementById('bio').value.trim();
-            
-            const successMsg = document.getElementById('profileSuccess');
-            const errorMsg = document.getElementById('profileError');
-            
-            successMsg.style.display = 'none';
-            errorMsg.style.display = 'none';
-            
-            try {
-                const response = await fetch(`/api/users/${username}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: username,
-                        display_name: displayName,
-                        bio: bio || null,
-                        avatar_url: null
-                    })
-                });
-                
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.detail || 'Failed to update profile');
-                }
-                
-                successMsg.textContent = 'Profile updated successfully!';
-                successMsg.style.display = 'block';
-            } catch (error) {
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
-            }
-        });
-        
-        // Add Link Form Submit
+        // Add link form
         document.getElementById('addLinkForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1122,7 +980,10 @@
                 
                 successMsg.textContent = 'Link added successfully!';
                 successMsg.style.display = 'block';
-                setTimeout(() => window.location.reload(), 1500);
+                document.getElementById('linkTitle').value = '';
+                document.getElementById('linkUrl').value = '';
+                loadLinks();
+                loadStats();
                 
             } catch (error) {
                 errorMsg.textContent = error.message;
@@ -1130,82 +991,489 @@
             }
         });
         
-        async function deleteLink(linkId) {
-            if (!confirm('Are you sure you want to delete this link?')) return;
+        // Approve voice message
+        async function approveVoice(voiceId) {
+            try {
+                const response = await fetch(`/api/admin/${username}/voices/${voiceId}/approve`, {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    loadPendingVoices();
+                }
+            } catch (error) {
+                console.error('Error approving voice:', error);
+            }
+        }
+        
+        // Reject voice message
+        async function rejectVoice(voiceId) {
+            try {
+                const response = await fetch(`/api/admin/${username}/voices/${voiceId}/reject`, {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    loadPendingVoices();
+                }
+            } catch (error) {
+                console.error('Error rejecting voice:', error);
+            }
+        }
+        
+        // Toggle auto-approve
+        document.getElementById('auto-approve-toggle').addEventListener('change', async function() {
+            try {
+                await fetch(`/api/admin/${username}/auto-approve`, {
+                    method: 'PUT'
+                });
+            } catch (error) {
+                console.error('Error toggling auto-approve:', error);
+            }
+        });
+        
+        // Profile settings form
+        document.getElementById('profile-settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const successMsg = document.getElementById('linksSuccess');
-            const errorMsg = document.getElementById('linksError');
+            const formData = new FormData();
+            formData.append('display_name', document.getElementById('display-name').value);
+            formData.append('bio', document.getElementById('bio').value);
+            
+            const successMsg = document.getElementById('profileSuccess');
+            const errorMsg = document.getElementById('profileError');
             
             successMsg.style.display = 'none';
             errorMsg.style.display = 'none';
             
             try {
-                const response = await fetch(`/api/users/${username}/links/${linkId}`, {
-                    method: 'DELETE'
+                const response = await fetch(`/api/admin/${username}/profile`, {
+                    method: 'PUT',
+                    body: formData
                 });
                 
-                if (!response.ok) throw new Error('Failed to delete link');
+                if (response.ok) {
+                    successMsg.textContent = 'Profile updated successfully!';
+                    successMsg.style.display = 'block';
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Error updating profile';
+                errorMsg.style.display = 'block';
+            }
+        });
+        
+        // Toggle publish button
+        document.getElementById('toggle-publish-btn').addEventListener('click', async function() {
+            try {
+                const response = await fetch(`/api/admin/${username}/toggle-publish`, {
+                    method: 'PUT'
+                });
                 
-                const linkItem = document.querySelector(`[data-link-id="${linkId}"]`);
-                if (linkItem) linkItem.remove();
+                if (response.ok) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error toggling publish:', error);
+            }
+        });
+        
+        // Voice clone character counter
+        const testVoiceText = document.getElementById('test-voice-text');
+        if (testVoiceText) {
+            testVoiceText.addEventListener('input', function() {
+                document.getElementById('test-char-count').textContent = this.value.length;
+            });
+        }
+        
+        // Test voice clone function
+        async function testVoiceClone() {
+            const text = document.getElementById('test-voice-text').value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to test');
+                return;
+            }
+            
+            const successMsg = document.getElementById('voiceCloneSuccess');
+            const errorMsg = document.getElementById('voiceCloneError');
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            try {
+                const formData = new FormData();
+                formData.append('text', text);
                 
-                const linksList = document.getElementById('linksList');
-                if (linksList.children.length === 0) {
-                    linksList.innerHTML = '<div class="no-links"><p>No links yet. Add your first link below!</p></div>';
+                const response = await fetch(`/api/voice/test/${username}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to generate test audio');
                 }
                 
-                successMsg.textContent = 'Link deleted successfully!';
-                successMsg.style.display = 'block';
+                // Get audio blob and play it
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                const audioContainer = document.getElementById('test-audio-container');
+                const audioPlayer = document.getElementById('test-audio-player');
+                audioPlayer.src = audioUrl;
+                audioContainer.style.display = 'block';
+                audioPlayer.play();
+                
             } catch (error) {
                 errorMsg.textContent = error.message;
                 errorMsg.style.display = 'block';
             }
         }
         
-        function showAddLinkVoice(linkId) {
-            const form = document.getElementById(`linkVoiceForm${linkId}`);
-            if (form) {
-                form.style.display = 'block';
-                const textarea = document.getElementById(`linkVoiceText${linkId}`);
-                if (textarea) {
-                    textarea.addEventListener('input', (e) => {
-                        document.getElementById(`linkCharCount${linkId}`).textContent = e.target.value.length;
-                    });
-                }
-            }
+        // Show voice clone modal
+        function showVoiceCloneModal() {
+            document.getElementById('voice-clone-modal').style.display = 'flex';
         }
         
-        function showEditLinkVoice(linkId) {
-            showAddLinkVoice(linkId);
+        // Close voice clone modal
+        function closeVoiceCloneModal() {
+            document.getElementById('voice-clone-modal').style.display = 'none';
+            // Reset form
+            document.getElementById('voice-clone-form').reset();
+            recordedSamples = [];
+            updateSamplesDisplay();
         }
         
-        function hideLinkVoiceForm(linkId) {
-            const form = document.getElementById(`linkVoiceForm${linkId}`);
-            if (form) {
-                form.style.display = 'none';
-                const textarea = document.getElementById(`linkVoiceText${linkId}`);
-                if (textarea) textarea.value = '';
-            }
-        }
+        // Voice recording functionality
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedSamples = [];
+        let recordingTimer = null;
+        let recordingSeconds = 0;
         
-        async function generateLinkVoice(event, linkId) {
-            event.preventDefault();
-            
-            const text = document.getElementById(`linkVoiceText${linkId}`).value.trim();
-            
-            if (!text) {
-                alert('Please enter voice message text');
+        async function startRecording() {
+            if (recordedSamples.length >= 3) {
+                alert('Maximum 3 samples allowed');
                 return;
             }
             
-            const form = event.target;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Generating...';
-            submitBtn.disabled = true;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                recordingSeconds = 0;
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    recordedSamples.push(audioBlob);
+                    updateSamplesDisplay();
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                mediaRecorder.start();
+                
+                // Update UI
+                document.getElementById('record-btn').style.display = 'none';
+                document.getElementById('stop-btn').style.display = 'inline-block';
+                document.getElementById('recording-indicator').style.display = 'inline-block';
+                
+                // Start timer
+                recordingTimer = setInterval(() => {
+                    recordingSeconds++;
+                    const minutes = Math.floor(recordingSeconds / 60);
+                    const seconds = recordingSeconds % 60;
+                    document.getElementById('recording-time').textContent = 
+                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Auto-stop at 20 seconds
+                    if (recordingSeconds >= 20) {
+                        stopRecording();
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                alert('Error accessing microphone: ' + error.message);
+            }
+        }
+        
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                clearInterval(recordingTimer);
+                
+                // Update UI
+                document.getElementById('record-btn').style.display = 'inline-block';
+                document.getElementById('stop-btn').style.display = 'none';
+                document.getElementById('recording-indicator').style.display = 'none';
+                document.getElementById('recording-time').textContent = '0:00';
+            }
+        }
+        
+        function updateSamplesDisplay() {
+            const container = document.getElementById('recorded-samples');
+            container.innerHTML = recordedSamples.map((blob, index) => `
+                <div style="background: #f7fafc; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Sample ${index + 1} (${(blob.size / 1024).toFixed(1)} KB)</span>
+                    <div>
+                        <button type="button" class="btn-secondary btn-small" onclick="playSample(${index})">▶️ Play</button>
+                        <button type="button" class="btn-danger btn-small" onclick="deleteSample(${index})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('samples-count').textContent = `${recordedSamples.length}/3 samples recorded`;
+        }
+        
+        function playSample(index) {
+            const audioUrl = URL.createObjectURL(recordedSamples[index]);
+            const audio = new Audio(audioUrl);
+            audio.play();
+        }
+        
+        function deleteSample(index) {
+            recordedSamples.splice(index, 1);
+            updateSamplesDisplay();
+        }
+        
+        // Submit voice clone
+        document.getElementById('voice-clone-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (recordedSamples.length === 0) {
+                alert('Please record at least one voice sample');
+                return;
+            }
+            
+            const voiceName = document.getElementById('voice-name').value.trim();
+            const language = document.getElementById('voice-language').value;
+            const tags = document.getElementById('voice-tags').value.trim();
+            const description = document.getElementById('voice-description').value.trim();
+            
+            const formData = new FormData();
+            formData.append('voice_name', voiceName);
+            formData.append('language', language);
+            formData.append('tags', tags);
+            formData.append('description', description);
+            formData.append('remove_noise', 'true');
+            
+            // Add all recorded samples
+            recordedSamples.forEach((blob, index) => {
+                formData.append('voice_samples', blob, `sample_${index}.mp3`);
+            });
             
             try {
-                const response = await fetch(`/api/voice/generate-link/${username}/${linkId}`, {
+                document.getElementById('submit-clone-btn').disabled = true;
+                document.getElementById('submit-clone-btn').textContent = '⏳ Creating...';
+                
+                const response = await fetch(`/api/voice/clone/${username}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to create voice clone');
+                }
+                
+                const result = await response.json();
+                
+                // Show success and reload page
+                alert(result.message);
+                location.reload();
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+                document.getElementById('submit-clone-btn').disabled = false;
+                document.getElementById('submit-clone-btn').textContent = '✨ Create Voice Clone';
+            }
+        });
+        
+        // Load analytics data on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadAnalyticsData();
+        });
+    </script>
+    
+    <!-- Voice Clone Modal -->
+    <div id="voice-clone-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #2d3748;">🎤 Create Voice Clone</h2>
+                <button onclick="closeVoiceCloneModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #718096;">×</button>
+            </div>
+            
+            <form id="voice-clone-form">
+                <div class="form-group">
+                    <label>Voice Name *</label>
+                    <input type="text" class="form-control" id="voice-name" placeholder="My Voice" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Language</label>
+                    <select class="form-control" id="voice-language">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="pt-BR">Portuguese (BR)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tags (optional)</label>
+                    <input type="text" class="form-control" id="voice-tags" placeholder="casual, friendly, professional">
+                </div>
+                
+                <div class="form-group">
+                    <label>Description (optional)</label>
+                    <textarea class="form-control" id="voice-description" rows="2" placeholder="Describe your voice..."></textarea>
+                </div>
+                
+                <div class="info-box">
+                    <p><strong>Recording Instructions:</strong></p>
+                    <p>• Record 1-3 samples (5-15 seconds each)</p>
+                    <p>• Speak clearly in a quiet environment</p>
+                    <p>• Use natural tone and pace</p>
+                    <p>• Read the provided script or speak naturally</p>
+                </div>
+                
+                <div style="background: #f0f0ff; padding: 15px; border-radius: 10px; margin: 20px 0;">
+                    <h4 style="margin-top: 0;">📝 Suggested Script:</h4>
+                    <p style="line-height: 1.6; color: #4a5568;">"Hi, I'm excited to share my links with you. Click any link below to learn more about what I do and connect with me. Thanks for visiting my profile!"</p>
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <button type="button" class="btn-primary" id="record-btn" onclick="startRecording()">🎙️ Start Recording</button>
+                    <button type="button" class="btn-danger" id="stop-btn" style="display: none;" onclick="stopRecording()">⏹️ Stop Recording</button>
+                    <div id="recording-indicator" style="display: none; margin-top: 10px; color: #f56565;">
+                        <span style="display: inline-block; width: 10px; height: 10px; background: #f56565; border-radius: 50%; margin-right: 8px; animation: pulse 1s infinite;"></span>
+                        Recording... <span id="recording-time">0:00</span>
+                    </div>
+                </div>
+                
+                <div id="recorded-samples" style="margin: 20px 0;"></div>
+                <p id="samples-count" style="color: #718096; font-size: 0.9em; text-align: center;">0/3 samples recorded</p>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-secondary" onclick="closeVoiceCloneModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn-primary" id="submit-clone-btn" style="flex: 1;">✨ Create Voice Clone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Voice Message Modal -->
+    <div id="voice-message-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #2d3748;">🎙️ <span id="voice-modal-title">Add Voice Message</span></h2>
+                <button onclick="closeVoiceMessageModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #718096;">×</button>
+            </div>
+            
+            <div id="no-voice-clone-warning" class="info-box" style="display: none; background: #fff3cd; border-left-color: #ff9800;">
+                <p><strong>⚠️ Voice clone required!</strong></p>
+                <p>Please set up your voice clone in Profile Settings first.</p>
+            </div>
+            
+            <form id="voice-message-form" style="display: none;">
+                <div class="info-box">
+                    <p><strong>Link:</strong> <span id="voice-link-title"></span></p>
+                </div>
+                
+                <div class="form-group">
+                    <label>Why should people click this link? (max 200 characters) *</label>
+                    <textarea id="voice-message-text" class="form-control" maxlength="200" rows="3" placeholder="Tell visitors what they'll find when they click this link..." required></textarea>
+                    <div style="text-align: right; color: #718096; font-size: 0.85em; margin-top: 5px;">
+                        <span id="voice-message-char-count">0</span>/200 characters
+                    </div>
+                </div>
+                
+                <div id="voice-preview-container" style="display: none; margin: 20px 0; padding: 15px; background: #f7fafc; border-radius: 10px;">
+                    <h4 style="margin-top: 0;">🔊 Preview:</h4>
+                    <audio id="voice-preview-player" controls style="width: 100%;"></audio>
+                    <button type="button" class="btn-secondary btn-small" onclick="regenerateVoice()" style="margin-top: 10px;">🔄 Regenerate</button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-secondary" onclick="closeVoiceMessageModal()" style="flex: 1;">Cancel</button>
+                    <button type="button" class="btn-primary" id="generate-voice-btn" onclick="generateVoiceMessage()" style="flex: 1;">✨ Generate Voice</button>
+                    <button type="submit" class="btn-primary" id="save-voice-btn" style="flex: 1; display: none;">💾 Save Voice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Voice Message Modal Variables
+        let currentLinkId = null;
+        let hasVoiceClone = {% if user.voice_clone_id %}true{% else %}false{% endif %};
+        
+        // Show voice message modal
+        function showVoiceMessageModal(linkId, linkTitle, existingText) {
+            currentLinkId = linkId;
+            
+            // Check if voice clone exists
+            if (!hasVoiceClone) {
+                document.getElementById('no-voice-clone-warning').style.display = 'block';
+                document.getElementById('voice-message-form').style.display = 'none';
+                document.getElementById('voice-message-modal').style.display = 'flex';
+                return;
+            }
+            
+            document.getElementById('no-voice-clone-warning').style.display = 'none';
+            document.getElementById('voice-message-form').style.display = 'block';
+            
+            // Set title and link info
+            document.getElementById('voice-modal-title').textContent = existingText ? 'Edit Voice Message' : 'Add Voice Message';
+            document.getElementById('voice-link-title').textContent = linkTitle;
+            
+            // Set existing text if editing
+            const textArea = document.getElementById('voice-message-text');
+            textArea.value = existingText || '';
+            document.getElementById('voice-message-char-count').textContent = textArea.value.length;
+            
+            // Reset form state
+            document.getElementById('voice-preview-container').style.display = 'none';
+            document.getElementById('generate-voice-btn').style.display = 'inline-block';
+            document.getElementById('save-voice-btn').style.display = 'none';
+            
+            document.getElementById('voice-message-modal').style.display = 'flex';
+        }
+        
+        // Close voice message modal
+        function closeVoiceMessageModal() {
+            document.getElementById('voice-message-modal').style.display = 'none';
+            document.getElementById('voice-message-form').reset();
+            currentLinkId = null;
+        }
+        
+        // Voice message character counter
+        document.getElementById('voice-message-text').addEventListener('input', function() {
+            document.getElementById('voice-message-char-count').textContent = this.value.length;
+        });
+        
+        // Generate voice message
+        async function generateVoiceMessage() {
+            const text = document.getElementById('voice-message-text').value.trim();
+            
+            if (!text) {
+                alert('Please enter some text for the voice message');
+                return;
+            }
+            
+            if (!currentLinkId) {
+                alert('Error: No link selected');
+                return;
+            }
+            
+            try {
+                document.getElementById('generate-voice-btn').disabled = true;
+                document.getElementById('generate-voice-btn').textContent = '⏳ Generating...';
+                
+                const response = await fetch(`/api/voice/generate-link/${username}/${currentLinkId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: text })
@@ -1218,47 +1486,49 @@
                 
                 const result = await response.json();
                 
-                const successMsg = document.getElementById('linksSuccess');
-                successMsg.textContent = result.message;
-                successMsg.style.display = 'block';
+                // Show preview
+                const previewContainer = document.getElementById('voice-preview-container');
+                const previewPlayer = document.getElementById('voice-preview-player');
+                previewPlayer.src = `/audio/${result.audio_path.split('/').pop()}`;
+                previewContainer.style.display = 'block';
                 
-                setTimeout(() => window.location.reload(), 2000);
+                // Update buttons
+                document.getElementById('generate-voice-btn').style.display = 'none';
+                document.getElementById('save-voice-btn').style.display = 'inline-block';
+                
+                // Show success in alert
+                alert('Voice message generated successfully! Preview it below, then click Save.');
                 
             } catch (error) {
-                const errorMsg = document.getElementById('linksError');
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('generate-voice-btn').disabled = false;
+                document.getElementById('generate-voice-btn').textContent = '✨ Generate Voice';
             }
         }
         
-        async function deleteLinkVoice(linkId) {
-            if (!confirm('Are you sure you want to delete this voice message?')) return;
-            
-            const successMsg = document.getElementById('linksSuccess');
-            const errorMsg = document.getElementById('linksError');
-            
-            successMsg.style.display = 'none';
-            errorMsg.style.display = 'none';
-            
-            try {
-                const response = await fetch(`/api/voice/link/${username}/${linkId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (!response.ok) throw new Error('Failed to delete voice message');
-                
-                successMsg.textContent = 'Voice message deleted successfully!';
-                successMsg.style.display = 'block';
-                
-                setTimeout(() => window.location.reload(), 1500);
-                
-            } catch (error) {
-                errorMsg.textContent = error.message;
-                errorMsg.style.display = 'block';
-            }
+        // Regenerate voice message
+        async function regenerateVoice() {
+            await generateVoiceMessage();
         }
+        
+        // Save voice message
+        document.getElementById('voice-message-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Close modal and reload links
+            closeVoiceMessageModal();
+            await loadLinks();
+            
+            alert('Voice message saved successfully!');
+        });
     </script>
+    
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </body>
 </html>

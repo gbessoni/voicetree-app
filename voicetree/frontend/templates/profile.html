@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ user.display_name }} - VoiceTree</title>
+    <title>{{ user.display_name }} - selfie.fm</title>
     <style>
         * {
             margin: 0;
@@ -211,10 +211,19 @@
             color: white;
             text-decoration: none;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .profile-footer a:hover {
             text-decoration: underline;
+        }
+        
+        .footer-logo {
+            height: 24px;
+            width: auto;
+            vertical-align: middle;
         }
         
         /* Hidden audio element */
@@ -291,7 +300,7 @@
                 <div class="links-header">YOUR VOICE</div>
                 <div class="links-container">
                     {% for link in links %}
-                    <div class="link-item" onclick="openLink(event, '{{ link.url }}')">
+                    <div class="link-item" onclick="openLink(event, '{{ link.url }}', {{ link.id }})">
                         <div class="play-button {% if not link.voice_message_audio %}no-audio{% endif %}" 
                              onclick="toggleAudio(event, {{ link.id }})" 
                              id="playBtn{{ link.id }}">
@@ -326,17 +335,31 @@
 
         <!-- Footer -->
         <footer class="profile-footer">
-            <p>Create your own <a href="/">VoiceTree</a> 🌳</p>
+            <p>Create your own <a href="/"><img src="/static/images/logo.png" alt="selfie.fm" class="footer-logo"> selfie.fm</a></p>
         </footer>
     </div>
 
     <script>
         let currentAudio = null;
         let currentPlayBtn = null;
+        const username = "{{ user.username }}";
 
-        function openLink(event, url) {
+        async function openLink(event, url, linkId) {
             // Only open link if not clicking on play button
             if (!event.target.closest('.play-button')) {
+                // Track link click BEFORE opening URL
+                try {
+                    await fetch(`/api/clicks/${username}/${linkId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error tracking click:', error);
+                }
+                
+                // Then open link in new tab
                 window.open(url, '_blank', 'noopener,noreferrer');
             }
         }
@@ -354,6 +377,8 @@
                 if (audio.paused) {
                     audio.play();
                     playBtn.classList.add('playing');
+                    // Track voice play when starting playback
+                    trackVoicePlay();
                 } else {
                     audio.pause();
                     playBtn.classList.remove('playing');
@@ -373,6 +398,9 @@
                 playBtn.classList.add('playing');
                 currentAudio = audio;
                 currentPlayBtn = playBtn;
+                
+                // Track voice play when starting new audio
+                trackVoicePlay();
             }
             
             // Reset button when audio ends
@@ -383,6 +411,40 @@
                     currentPlayBtn = null;
                 }
             };
+        }
+        
+        // Track link click
+        async function trackLinkClick(linkId) {
+            try {
+                await fetch(`/api/track/click/${linkId}`, {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('Error tracking click:', error);
+            }
+        }
+        
+        // Track voice message play
+        async function trackVoicePlay() {
+            try {
+                await fetch(`/api/track/voice-play/${username}`, {
+                    method: 'POST'
+                });
+            } catch (error) {
+                console.error('Error tracking voice play:', error);
+            }
+        }
+        
+        // Track welcome message play
+        const welcomeAudio = document.querySelector('.welcome-audio-player audio');
+        if (welcomeAudio) {
+            let hasTrackedWelcome = false;
+            welcomeAudio.addEventListener('play', function() {
+                if (!hasTrackedWelcome) {
+                    trackVoicePlay();
+                    hasTrackedWelcome = true;
+                }
+            });
         }
     </script>
 </body>

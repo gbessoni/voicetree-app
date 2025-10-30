@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conduit - Every Link Gains a Voice</title>
+    <title>selfie.fm - Every Link Gains a Voice</title>
     <style>
         * {
             margin: 0;
@@ -41,9 +41,22 @@
         }
         
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             font-weight: 700;
             letter-spacing: -0.5px;
             color: #000;
+            text-decoration: none;
+        }
+        
+        .logo img {
+            height: 40px;
+            width: auto;
+        }
+        
+        .logo-text {
+            font-size: 18px;
         }
         
         .nav {
@@ -433,7 +446,10 @@
 </head>
 <body>
     <div class="header-bar">
-        <div class="logo">conduit</div>
+        <a href="/" class="logo">
+            <img src="/static/images/logo.png" alt="selfie.fm logo">
+            <span class="logo-text">selfie.fm</span>
+        </a>
         <div class="nav">
             <a href="#features">how it works</a>
             <a href="#pricing">pricing</a>
@@ -447,10 +463,10 @@
             
             <p class="subheader">Stop sending people to a page full of links.</p>
             
-            <p class="descriptor">Every link you share deserves to be introduced by you. A 10-second voice message. Your tone. Your message. Your reason why. That's Conduit.</p>
+            <p class="descriptor">Every link you share deserves to be introduced by you. A 10-second voice message. Your tone. Your message. Your reason why. That's selfie.fm.</p>
             
             <div class="cta-group">
-                <button class="btn btn-primary" onclick="startFresh()">Build Your Conduit</button>
+                <button class="btn btn-primary" onclick="startFresh()">Build Your selfie.fm</button>
                 <button class="btn btn-secondary" onclick="importLinktree()">Import Linktree</button>
             </div>
             

@@ -16,6 +16,7 @@ class User(Base):
     display_name = Column(String(100), nullable=False)
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(500), nullable=True)
+    banner_url = Column(String(500), nullable=True)  # Banner image
     is_published = Column(Boolean, default=False)
     imported_from_linktree = Column(Boolean, default=False)
     
@@ -25,6 +26,12 @@ class User(Base):
     welcome_message_text = Column(Text, nullable=True)  # Welcome message text
     welcome_message_audio = Column(String(500), nullable=True)  # Path to welcome audio
     welcome_message_type = Column(String(20), default="static")  # "static" or "daily_ai"
+    
+    # Analytics fields
+    profile_views = Column(Integer, default=0)
+    total_link_clicks = Column(Integer, default=0)
+    voice_message_plays = Column(Integer, default=0)
+    auto_approve_voice = Column(Boolean, default=False)  # Auto-approve voice messages
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -50,6 +57,9 @@ class Link(Base):
     # Voice message fields for per-link intros
     voice_message_text = Column(String(200), nullable=True)  # Max 50 words (~200 chars)
     voice_message_audio = Column(String(500), nullable=True)  # Path to audio file
+    
+    # Analytics
+    click_count = Column(Integer, default=0)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -78,3 +88,32 @@ class VoiceMessage(Base):
     
     def __repr__(self):
         return f"<VoiceMessage(user_id={self.user_id}, approved={self.is_approved})>"
+
+class ProfileView(Base):
+    """Track profile views over time for analytics"""
+    __tablename__ = "profile_views"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    view_date = Column(DateTime(timezone=True), server_default=func.now())
+    referrer = Column(String(500), nullable=True)  # Where the traffic came from
+    
+    def __repr__(self):
+        return f"<ProfileView(user_id={self.user_id}, date={self.view_date})>"
+
+class LinkClick(Base):
+    """Track individual link clicks for analytics"""
+    __tablename__ = "link_clicks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    click_date = Column(DateTime(timezone=True), server_default=func.now())
+    referrer = Column(String(500), nullable=True)  # Where the click came from
+    user_agent = Column(String(500), nullable=True)  # Browser/device info
+    
+    # Relationships
+    link = relationship("Link")
+    
+    def __repr__(self):
+        return f"<LinkClick(link_id={self.link_id}, date={self.click_date})>"
