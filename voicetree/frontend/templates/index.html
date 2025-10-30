@@ -3,58 +3,631 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VoiceTree - Your Voice-Powered Link Hub</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>Conduit - Every Link Gains a Voice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .viewport {
+            width: 100vw;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            padding: 48px 60px;
+            align-items: center;
+        }
+        
+        .header-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        
+        .logo {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #000;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 28px;
+            color: #666;
+        }
+        
+        .nav a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.3s;
+        }
+        
+        .nav a:hover {
+            color: #000;
+        }
+        
+        .left-side {
+            padding-top: 60px;
+        }
+        
+        h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 28px;
+            letter-spacing: -1px;
+            color: #000;
+        }
+        
+        .subheader {
+            font-size: 18px;
+            color: #555;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-width: 500px;
+        }
+        
+        .descriptor {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 48px;
+            line-height: 1.7;
+            max-width: 480px;
+            font-weight: 300;
+        }
+        
+        .cta-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        
+        .btn-primary {
+            background: #000;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #333;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #000;
+            border: 1px solid #d0d0d0;
+        }
+        
+        .btn-secondary:hover {
+            background: #f5f5f5;
+            border-color: #999;
+        }
+        
+        .trust-text {
+            font-size: 12px;
+            color: #999;
+            margin-top: 20px;
+        }
+        
+        .right-side {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-top: 60px;
+        }
+        
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+        
+        .demo-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+        
+        .demo-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        
+        .author-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: #000;
+        }
+        
+        .author-info p {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .link-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .play-btn:hover {
+            background: #333;
+            transform: scale(1.08);
+        }
+        
+        .link-content {
+            flex: 1;
+        }
+        
+        .link-content p {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        
+        .link-content small {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .link-arrow {
+            color: #ccc;
+            font-size: 18px;
+        }
+        
+        .voice-indicator {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: #667eea;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #000;
+        }
+        
+        .modal-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-family: inherit;
+        }
+        
+        .modal-input:focus {
+            outline: none;
+            border-color: #000;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn-cancel {
+            background: transparent;
+            color: #666;
+        }
+        
+        .modal-btn-cancel:hover {
+            background: #f5f5f5;
+        }
+        
+        .modal-btn-submit {
+            background: #000;
+            color: white;
+        }
+        
+        .modal-btn-submit:hover {
+            background: #333;
+        }
+        
+        .modal-btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            margin-top: 12px;
+        }
+        
+        @media (max-width: 1200px) {
+            .viewport {
+                grid-template-columns: 1fr;
+                padding: 120px 40px 40px;
+                gap: 60px;
+            }
+            
+            .header-bar {
+                padding: 20px 40px;
+            }
+            
+            .left-side, .right-side {
+                padding-top: 0;
+            }
+            
+            h1 {
+                font-size: 42px;
+            }
+            
+            .demo-card {
+                padding: 28px;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .viewport {
+                padding: 100px 20px 30px;
+                gap: 40px;
+            }
+            
+            .header-bar {
+                padding: 16px 20px;
+            }
+            
+            h1 {
+                font-size: 32px;
+            }
+            
+            .subheader {
+                font-size: 16px;
+            }
+            
+            .descriptor {
+                font-size: 15px;
+            }
+            
+            .cta-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .nav {
+                display: none;
+            }
+            
+            .demo-card {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header class="hero">
-            <div class="logo">
-                <h1>🌳 VoiceTree</h1>
-            </div>
-            <p class="tagline">Your Voice-Powered Link Hub</p>
-        </header>
-
-        <main class="homepage-content">
-            <section class="intro">
-                <h2>Share Your Links, Amplify Your Voice</h2>
-                <p>Create a beautiful landing page for all your links with AI-powered voice features.</p>
-            </section>
-
-            <section class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">🔗</div>
-                    <h3>One Link, Infinite Possibilities</h3>
-                    <p>Share all your important links from a single, customizable page.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎤</div>
-                    <h3>AI Voice Features</h3>
-                    <p>Coming soon: Add voice descriptions to your links for a unique experience.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Fast & Simple</h3>
-                    <p>Get started in minutes with our easy-to-use platform.</p>
-                </div>
-            </section>
-
-            <section class="cta">
-                <h2>Ready to Get Started?</h2>
-                <p>Create your VoiceTree profile and start sharing your links today!</p>
-                <button class="btn-primary">Create Your VoiceTree</button>
-            </section>
-
-            <section class="demo">
-                <h3>Try a Demo Profile</h3>
-                <p>Visit <a href="/demo" class="demo-link">voicetree.app/demo</a> to see an example profile</p>
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2024 VoiceTree. Built with ❤️ and AI.</p>
-            <p class="issue-ref">GitHub Issue #1: Build VoiceTree MVP - Core Features</p>
-        </footer>
+    <div class="header-bar">
+        <div class="logo">conduit</div>
+        <div class="nav">
+            <a href="#features">how it works</a>
+            <a href="#pricing">pricing</a>
+            <a href="#blog">blog</a>
+        </div>
     </div>
+    
+    <div class="viewport">
+        <div class="left-side">
+            <h1>Your links. Your personality. Your voice.</h1>
+            
+            <p class="subheader">Stop sending people to a page full of links.</p>
+            
+            <p class="descriptor">Every link you share deserves to be introduced by you. A 10-second voice message. Your tone. Your message. Your reason why. That's Conduit.</p>
+            
+            <div class="cta-group">
+                <button class="btn btn-primary" onclick="startFresh()">Build Your Conduit</button>
+                <button class="btn btn-secondary" onclick="importLinktree()">Import Linktree</button>
+            </div>
+            
+            <p class="trust-text">60 seconds to launch. Your personality in every link.</p>
+        </div>
+        
+        <div class="right-side">
+            <div class="demo-card">
+                <div class="demo-label">See it in action</div>
+                
+                <div class="demo-author">
+                    <div class="avatar">SG</div>
+                    <div class="author-info">
+                        <h4>Seth Godin</h4>
+                        <p>Writer & marketer</p>
+                    </div>
+                </div>
+                
+                <div class="links-list">
+                    <div class="link-item">
+                        <button class="play-btn" onclick="playAudio(1)" title="Play voice message">▶</button>
+                        <div class="link-content">
+                            <p>📖 One important note per day</p>
+                            <small><span class="voice-indicator"></span>10 seconds • Your voice</small>
+                        </div>
+                        <div class="link-arrow">→</div>
+                    </div>
+                    
+                    <div class="link-item">
+                        <button class="play-btn" onclick="playAudio(2)" title="Play voice message">▶</button>
+                        <div class="link-content">
+                            <p>📧 Subscribe to my email</p>
+                            <small><span class="voice-indicator"></span>10 seconds • Your voice</small>
+                        </div>
+                        <div class="link-arrow">→</div>
+                    </div>
+                    
+                    <div class="link-item">
+                        <button class="play-btn" onclick="playAudio(3)" title="Play voice message">▶</button>
+                        <div class="link-content">
+                            <p>🎙️ Listen to my podcast</p>
+                            <small><span class="voice-indicator"></span>10 seconds • Your voice</small>
+                        </div>
+                        <div class="link-arrow">→</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Linktree Modal -->
+    <div id="linktreeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Import from Linktree</div>
+            <div class="modal-description">Enter your Linktree URL and we'll import all your links automatically.</div>
+            <input 
+                type="text" 
+                id="linktreeUrl" 
+                class="modal-input" 
+                placeholder="https://linktr.ee/yourname"
+            >
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="modal-btn modal-btn-submit" onclick="buildAndPreview()" id="importBtn">Import</button>
+            </div>
+            <div id="loadingText" class="loading-text" style="display: none;">Importing your links...</div>
+        </div>
+    </div>
+    
+    <script>
+        // Navigate to signup page
+        function startFresh() {
+            window.location.href = '/signup';
+        }
+        
+        // Show modal for Linktree import
+        function importLinktree() {
+            document.getElementById('linktreeModal').classList.add('show');
+            document.getElementById('linktreeUrl').focus();
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('linktreeModal').classList.remove('show');
+            document.getElementById('linktreeUrl').value = '';
+            document.getElementById('loadingText').style.display = 'none';
+            document.getElementById('importBtn').disabled = false;
+        }
+        
+        // Build and preview from Linktree URL (preserved from original)
+        async function buildAndPreview() {
+            const linktreeUrl = document.getElementById('linktreeUrl').value.trim();
+            
+            if (!linktreeUrl) {
+                alert('Please enter a Linktree URL');
+                return;
+            }
+            
+            // Validate URL format
+            if (!linktreeUrl.includes('linktr.ee') && !linktreeUrl.includes('linktree.com')) {
+                alert('Please enter a valid Linktree URL (e.g., https://linktr.ee/yourname)');
+                return;
+            }
+            
+            // Show loading state
+            document.getElementById('importBtn').disabled = true;
+            document.getElementById('loadingText').style.display = 'block';
+            
+            try {
+                // Step 1: Scrape the Linktree page
+                const scrapeResponse = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: linktreeUrl })
+                });
+                
+                if (!scrapeResponse.ok) {
+                    throw new Error('Failed to scrape Linktree page');
+                }
+                
+                const scrapeData = await scrapeResponse.json();
+                
+                // Step 2: Create user from scraped data
+                const createResponse = await fetch('/api/users/from-linktree', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scrapeData)
+                });
+                
+                if (!createResponse.ok) {
+                    throw new Error('Failed to create user from Linktree data');
+                }
+                
+                const userData = await createResponse.json();
+                
+                // Step 3: Redirect to preview page
+                window.location.href = `/preview/${userData.username}`;
+                
+            } catch (error) {
+                console.error('Error importing from Linktree:', error);
+                alert('Failed to import from Linktree. Please check the URL and try again.');
+                document.getElementById('importBtn').disabled = false;
+                document.getElementById('loadingText').style.display = 'none';
+            }
+        }
+        
+        // Demo audio playback
+        function playAudio(id) {
+            console.log(`Playing demo audio ${id}`);
+            // In production, this would play actual audio files
+        }
+        
+        // Allow Enter key to submit in modal
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('linktreeUrl');
+            if (input) {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        buildAndPreview();
+                    }
+                });
+            }
+            
+            // Close modal on click outside
+            const modal = document.getElementById('linktreeModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

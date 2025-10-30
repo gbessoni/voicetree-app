@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview - {{ user.display_name }} - VoiceTree</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .preview-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .preview-banner h2 {
+            margin: 0 0 10px 0;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-publish {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-publish:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .btn-edit {
+            background: white;
+            color: #667eea;
+        }
+        
+        .btn-edit:hover {
+            background: #f0f0f0;
+        }
+        
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+        }
+        
+        .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+        
+        .profile-bio {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .link-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: #1a1a1a;
+            transition: all 0.3s;
+            display: block;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .link-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .link-url {
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+        }
+        
+        .no-links {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-banner">
+        <h2>👀 Preview Mode</h2>
+        <p>This is how your profile will look to visitors</p>
+        <div class="preview-actions">
+            <a href="/dashboard/{{ user.username }}" class="btn btn-edit">✏️ Edit Profile</a>
+            <button onclick="publishProfile()" class="btn btn-publish" id="publishBtn">
+                ✅ Publish Profile
+            </button>
+        </div>
+    </div>
+    
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.display_name[0].upper() }}
+            </div>
+            <h1 class="profile-name">{{ user.display_name }}</h1>
+            {% if user.bio %}
+            <p class="profile-bio">{{ user.bio }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="links-container">
+            {% if links %}
+                {% for link in links %}
+                <a href="{{ link.url }}" class="link-card" target="_blank" rel="noopener noreferrer">
+                    <div class="link-title">{{ link.title }}</div>
+                    <div class="link-url">{{ link.url }}</div>
+                </a>
+                {% endfor %}
+            {% else %}
+            <div class="no-links">
+                <p>No links yet. Add some in the dashboard!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        async function publishProfile() {
+            const publishBtn = document.getElementById('publishBtn');
+            publishBtn.disabled = true;
+            publishBtn.textContent = 'Publishing...';
+            
+            try {
+                const response = await fetch('/api/users/{{ user.username }}/publish', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to publish profile');
+                }
+                
+                // Redirect to the public profile
+                window.location.href = '/{{ user.username }}';
+            } catch (error) {
+                alert('Error: ' + error.message);
+                publishBtn.disabled = false;
+                publishBtn.textContent = '✅ Publish Profile';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -4,38 +4,317 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ user.display_name }} - VoiceTree</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .profile-container {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+        
+        /* Banner/Header Section */
+        .profile-header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .avatar-circle {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+        
+        .profile-bio {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 480px;
+            margin: 12px auto 0;
+            line-height: 1.5;
+        }
+        
+        /* Welcome Audio Player */
+        .welcome-audio-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .welcome-audio-player {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .welcome-audio-player audio {
+            width: 100%;
+            height: 40px;
+            border-radius: 8px;
+        }
+        
+        /* Links Card */
+        .links-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px 24px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            margin-top: 24px;
+        }
+        
+        .links-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+        }
+        
+        .link-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .link-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Play Button */
+        .play-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .play-button:hover {
+            background: #333;
+            transform: scale(1.05);
+        }
+        
+        .play-button::before {
+            content: '▶';
+            color: white;
+            font-size: 16px;
+            margin-left: 3px;
+        }
+        
+        .play-button.playing::before {
+            content: '⏸';
+            margin-left: 0;
+        }
+        
+        .play-button.no-audio {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .play-button.no-audio:hover {
+            transform: none;
+        }
+        
+        /* Link Content */
+        .link-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .link-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .link-subtitle {
+            font-size: 13px;
+            color: #999;
+        }
+        
+        /* Arrow */
+        .link-arrow {
+            font-size: 20px;
+            color: #999;
+            flex-shrink: 0;
+        }
+        
+        /* No Links State */
+        .no-links {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        /* Footer */
+        .profile-footer {
+            text-align: center;
+            padding: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        .profile-footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .profile-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Hidden audio element */
+        .hidden-audio {
+            display: none;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 640px) {
+            body {
+                padding: 12px;
+            }
+            
+            .profile-header {
+                padding: 24px 12px;
+            }
+            
+            .avatar-circle {
+                width: 80px;
+                height: 80px;
+                font-size: 32px;
+            }
+            
+            .profile-name {
+                font-size: 24px;
+            }
+            
+            .links-card {
+                padding: 24px 16px;
+                border-radius: 16px;
+            }
+            
+            .link-item {
+                padding: 12px;
+            }
+            
+            .play-button {
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
 </head>
-<body class="profile-page">
-    <div class="container profile-container">
+<body>
+    <div class="profile-container">
+        <!-- Header Section -->
         <header class="profile-header">
-            <div class="avatar">
+            <div class="avatar-circle">
                 {% if user.avatar_url %}
-                    <img src="{{ user.avatar_url }}" alt="{{ user.display_name }}">
+                    <img src="{{ user.avatar_url }}" alt="{{ user.display_name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                 {% else %}
-                    <div class="avatar-placeholder">{{ user.display_name[0].upper() }}</div>
+                    {{ user.display_name[0].upper() }}
                 {% endif %}
             </div>
             <h1 class="profile-name">{{ user.display_name }}</h1>
-            <p class="profile-username">@{{ user.username }}</p>
             {% if user.bio %}
                 <p class="profile-bio">{{ user.bio }}</p>
             {% endif %}
+            
+            {% if user.welcome_message_audio %}
+            <div class="welcome-audio-container">
+                <div class="welcome-audio-player">
+                    <audio controls>
+                        <source src="/audio/{{ user.welcome_message_audio.split('/')[-1] }}" type="audio/mpeg">
+                    </audio>
+                </div>
+            </div>
+            {% endif %}
         </header>
 
-        <main class="links-section">
+        <!-- Links Card -->
+        <div class="links-card">
             {% if links %}
+                <div class="links-header">YOUR VOICE</div>
                 <div class="links-container">
                     {% for link in links %}
-                        <a href="{{ link.url }}" class="link-card" target="_blank" rel="noopener noreferrer">
-                            <div class="link-content">
-                                <h3 class="link-title">{{ link.title }}</h3>
-                                {% if link.description %}
-                                    <p class="link-description">{{ link.description }}</p>
-                                {% endif %}
+                    <div class="link-item" onclick="openLink(event, '{{ link.url }}')">
+                        <div class="play-button {% if not link.voice_message_audio %}no-audio{% endif %}" 
+                             onclick="toggleAudio(event, {{ link.id }})" 
+                             id="playBtn{{ link.id }}">
+                        </div>
+                        
+                        {% if link.voice_message_audio %}
+                        <audio class="hidden-audio" id="audio{{ link.id }}">
+                            <source src="/audio/{{ link.voice_message_audio.split('/')[-1] }}" type="audio/mpeg">
+                        </audio>
+                        {% endif %}
+                        
+                        <div class="link-content">
+                            <div class="link-title">
+                                <span>🔗</span>
+                                <span>{{ link.title }}</span>
                             </div>
-                            <div class="link-arrow">→</div>
-                        </a>
+                            {% if link.voice_message_audio %}
+                                <div class="link-subtitle">Intro</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="link-arrow">→</div>
+                    </div>
                     {% endfor %}
                 </div>
             {% else %}
@@ -43,11 +322,68 @@
                     <p>No links added yet.</p>
                 </div>
             {% endif %}
-        </main>
+        </div>
 
+        <!-- Footer -->
         <footer class="profile-footer">
             <p>Create your own <a href="/">VoiceTree</a> 🌳</p>
         </footer>
     </div>
+
+    <script>
+        let currentAudio = null;
+        let currentPlayBtn = null;
+
+        function openLink(event, url) {
+            // Only open link if not clicking on play button
+            if (!event.target.closest('.play-button')) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }
+        }
+
+        function toggleAudio(event, linkId) {
+            event.stopPropagation();
+            
+            const audio = document.getElementById('audio' + linkId);
+            const playBtn = document.getElementById('playBtn' + linkId);
+            
+            if (!audio) return;
+            
+            // If clicking the same button
+            if (currentAudio === audio) {
+                if (audio.paused) {
+                    audio.play();
+                    playBtn.classList.add('playing');
+                } else {
+                    audio.pause();
+                    playBtn.classList.remove('playing');
+                }
+            } else {
+                // Stop current audio if playing
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                    if (currentPlayBtn) {
+                        currentPlayBtn.classList.remove('playing');
+                    }
+                }
+                
+                // Play new audio
+                audio.play();
+                playBtn.classList.add('playing');
+                currentAudio = audio;
+                currentPlayBtn = playBtn;
+            }
+            
+            // Reset button when audio ends
+            audio.onended = function() {
+                playBtn.classList.remove('playing');
+                if (currentAudio === audio) {
+                    currentAudio = null;
+                    currentPlayBtn = null;
+                }
+            };
+        }
+    </script>
 </body>
 </html>

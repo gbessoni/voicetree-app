@@ -17,3 +17,11 @@ jinja2==3.1.2
 # For file uploads and static files
 python-multipart==0.0.6
 aiofiles==23.2.1
+
+# Inworld AI Voice Integration (uses REST API via requests)
+# No separate SDK needed - API key via INWORLD_API_KEY environment variable
+# Get your API key from: https://platform.inworld.ai/
+
+# Web scraping for Linktree import
+beautifulsoup4==4.12.2
+requests==2.31.0
